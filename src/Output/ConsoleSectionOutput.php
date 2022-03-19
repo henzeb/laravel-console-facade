@@ -26,7 +26,7 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
         int $verbosity,
         bool $decorated,
         OutputFormatterInterface $formatter,
-        InputInterface $input,
+        InputInterface $input
     )
     {
         $this->input = $input;
@@ -51,5 +51,23 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
     public function setVerbosity(int $level)
     {
         parent::setVerbosity($level);
+    }
+
+    public function render(callable $message)
+    {
+
+        $array = [];
+        $streamer = new ConsoleSectionOutput(
+            fopen('php://memory', 'rw+'),
+            $array,
+            $this->getVerbosity(),
+            $this->isDecorated(),
+            $this->getFormatter(),
+            $this->input
+        );
+
+        $message($streamer);
+
+        $this->overwrite($streamer->getContent());
     }
 }

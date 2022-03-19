@@ -2,6 +2,10 @@
 
 All notable changes to `Laravel Console Facade` will be documented in this file
 
+## 1.2.0 - 2022-03-19
+
+- adding delayed rendering
+
 ## 1.1.0 - 2022-03-18
 
 - adding section management

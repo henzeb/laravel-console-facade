@@ -38,7 +38,16 @@ class ConsoleOutput
         ))->getValue($this->output);
     }
 
-    public function section(string $name): ConsoleSectionOutput
+    public function section(string $name, callable $render = null): ConsoleSectionOutput
+    {
+        $section = $this->getSection($name);
+        if($render) {
+            $section->render($render);
+        }
+        return $section;
+    }
+
+    private function getSection(string $name): ConsoleSectionOutput
     {
         if (isset($this->sections[$name])) {
             return $this->sections[$name];

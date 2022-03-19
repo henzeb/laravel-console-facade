@@ -1,14 +1,15 @@
 <?php
 
-namespace Henzeb\Jukebox\Tests\Unit\Console\Output;
+namespace Henzeb\Console\Tests\Unit\Console\Output;
 
 
 use Mockery;
 use ReflectionProperty;
 use Orchestra\Testbench\TestCase;
-use Henzeb\Console\Facades\Console;
 use Symfony\Component\Console\Output\Output;
 use Henzeb\Console\Output\ConsoleSectionOutput;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 
@@ -18,6 +19,7 @@ class ConsoleSectionOutputTest extends TestCase
     public function testShouldReturnProgressBar(): void
     {
         $output = Mockery::mock(ConsoleSectionOutput::class)->makePartial();
+        $output->expects('getVerbosity')->times(5)->andReturn(1);
 
         (new ReflectionProperty($output, 'output'))->setValue($output, $output);
 
@@ -49,5 +51,25 @@ class ConsoleSectionOutputTest extends TestCase
         $output = Mockery::mock(ConsoleSectionOutput::class)->makePartial();
         $output->setVerbosity($level);
         $this->assertEquals($level, $output->getVerbosity());
+    }
+
+    public function testShouldRenderTableDelayed(): void
+    {
+        $output = Mockery::mock(ConsoleSectionOutput::class)->makePartial();
+
+        (new ReflectionProperty(Output::class, 'formatter'))->setValue($output, new OutputFormatter());
+        (new ReflectionProperty(ConsoleSectionOutput::class, 'input'))->setValue($output, new ArrayInput([]));
+
+        $output->setVerbosity(ConsoleOutput::VERBOSITY_NORMAL);
+
+        $output->expects('isDecorated')->andReturn(true);
+        $output->expects('overwrite')->with('expectedOutput'.PHP_EOL);
+
+
+        $output->render(
+            function (ConsoleSectionOutput $section) {
+                $section->write('expectedOutput');
+            }
+        );
     }
 }

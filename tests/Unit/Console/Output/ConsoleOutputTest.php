@@ -1,13 +1,14 @@
 <?php
 
-namespace Henzeb\Jukebox\Tests\Unit\Console\Output;
+namespace Henzeb\Console\Tests\Unit\Console\Output;
 
 
+use Mockery;
+use ReflectionProperty;
 use Orchestra\Testbench\TestCase;
 use Henzeb\Console\Facades\Console;
 use Illuminate\Console\OutputStyle;
 use Henzeb\Console\Output\ConsoleOutput;
-
 use Henzeb\Console\Output\ConsoleSectionOutput;
 use Henzeb\Console\Providers\ConsoleServiceProvider;
 
@@ -19,7 +20,8 @@ class ConsoleOutputTest extends TestCase
         return [ConsoleServiceProvider::class];
     }
 
-    public function testShouldAutomaticallySetOutputStyle() {
+    public function testShouldAutomaticallySetOutputStyle()
+    {
 
         Console::partialMock()->expects('setOutput');
 
@@ -52,5 +54,18 @@ class ConsoleOutputTest extends TestCase
         $expected = $output->section('mySection');
         $actual = $output->section('myOtherSection');
         $this->assertTrue($expected !== $actual);
+    }
+
+    public function testShouldRenderSection(): void
+    {
+        $output = (new ConsoleOutput());
+        $section = Mockery::mock(ConsoleSectionOutput::class)->makePartial();
+        $expectedCallable = function (ConsoleSectionOutput $section) {
+            $section->write('test');
+        };
+        $section->expects('render')->with($expectedCallable);
+
+        (new ReflectionProperty($output, 'sections'))->setValue($output, ['mySection' => $section]);
+        $output->section('mySection', $expectedCallable);
     }
 }
