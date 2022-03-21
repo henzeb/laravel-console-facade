@@ -63,7 +63,7 @@ class ConsoleSectionOutputTest extends TestCase
         $output->setVerbosity(ConsoleOutput::VERBOSITY_NORMAL);
 
         $output->expects('isDecorated')->andReturn(true);
-        $output->expects('overwrite')->with('expectedOutput'.PHP_EOL);
+        $output->expects('overwrite')->with('expectedOutput' . PHP_EOL);
 
 
         $output->render(
@@ -71,5 +71,112 @@ class ConsoleSectionOutputTest extends TestCase
                 $section->write('expectedOutput');
             }
         );
+    }
+
+    public function testShouldDoNothing(): void
+    {
+        $stream = fopen('php://memory', 'rw+');
+        $array = [];
+        $console = new ConsoleSectionOutput(
+            $stream, $array,
+            ConsoleOutput::VERBOSITY_NORMAL,
+            false, new OutputFormatter(
+            false, []),
+            new ArrayInput([]));
+        $console->replace('test');
+        $console->replace('test2');
+        rewind($stream);
+        $this->assertEquals("" ,stream_get_contents($stream));
+    }
+
+    public function testShouldJustWrite(): void
+    {
+        $stream = fopen('php://memory', 'rw+');
+        $array = [];
+        $console = new ConsoleSectionOutput(
+            $stream, $array,
+            ConsoleOutput::VERBOSITY_NORMAL,
+            true, new OutputFormatter(
+            true, []),
+            new ArrayInput([]));
+        $console->replace('test');
+        rewind($stream);
+        $this->assertEquals("\e[2Ktest\n\e[0J", stream_get_contents($stream));
+    }
+
+    public function testShouldReplace(): void
+    {
+        $stream = fopen('php://memory', 'rw+');
+        $array = [];
+        $console = new ConsoleSectionOutput(
+            $stream, $array,
+            ConsoleOutput::VERBOSITY_NORMAL,
+            true, new OutputFormatter(
+            true, []),
+            new ArrayInput([]));
+        $console->replace('test');
+        $console->replace('test2');
+        rewind($stream);
+        $this->assertEquals("\e[2Ktest\n\e[0J\e[1A\e[2Ktest2\n\e[0J" ,stream_get_contents($stream));
+    }
+
+    public function testReplaceUsesWriteMethod(): void
+    {
+        /**
+         * @var $output ConsoleSectionOutput|Mockery\MockInterface
+         */
+        $output = Mockery::mock(ConsoleSectionOutput::class)->makePartial();
+        $output->expects('isDecorated')->andReturnTrue();
+        $output->expects('getStream')->andReturn(fopen('php://memory', 'rw+'));
+        // $output->expects('getVerbosity')->times(5)->andReturn(1);
+        $output->setVerbosity(ConsoleOutput::VERBOSITY_NORMAL);
+
+        (new ReflectionProperty($output, 'output'))->setValue($output, $output);
+
+        (new ReflectionProperty(Output::class, 'formatter'))->setValue($output, new OutputFormatter());
+
+        $output->expects('write')->once();
+
+        $output->replace('test');
+    }
+
+    public function testReplaceUsesWriteMethodTwice(): void
+    {
+        /**
+         * @var $output ConsoleSectionOutput|Mockery\MockInterface
+         */
+        $output = Mockery::mock(ConsoleSectionOutput::class)->makePartial();
+        $output->expects('isDecorated')->andReturnTrue();
+        $output->expects('getStream')->andReturn(fopen('php://memory', 'rw+'));
+        // $output->expects('getVerbosity')->times(5)->andReturn(1);
+        $output->setVerbosity(ConsoleOutput::VERBOSITY_NORMAL);
+
+        (new ReflectionProperty($output, 'output'))->setValue($output, $output);
+
+        (new ReflectionProperty(Output::class, 'formatter'))->setValue($output, new OutputFormatter());
+
+        $output->expects('write')->twice();
+
+        $output->replace("test\nwrite");
+    }
+
+    public function testReplaceUsesWriteMethodTwiceWithArray(): void
+    {
+        /**
+         * @var $output ConsoleSectionOutput|Mockery\MockInterface
+         */
+        $output = Mockery::mock(ConsoleSectionOutput::class)->makePartial();
+        $output->expects('isDecorated')->andReturnTrue();
+        $output->expects('getStream')->andReturn(fopen('php://memory', 'rw+'));
+        // $output->expects('getVerbosity')->times(5)->andReturn(1);
+        $output->setVerbosity(ConsoleOutput::VERBOSITY_NORMAL);
+
+        (new ReflectionProperty($output, 'output'))->setValue($output, $output);
+
+        (new ReflectionProperty(Output::class, 'formatter'))->setValue($output, new OutputFormatter());
+
+        $output->expects('write')->twice();
+
+        $output->replace(['test', 'test2']);
     }
 }

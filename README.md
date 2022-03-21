@@ -54,8 +54,9 @@ class MyClass {
 
 ### delayed rendering
 
-Delayed rendering is useful when you have to rebuild things from scratch, like a table, that takes a lot of time.
-
+Delayed rendering is useful when you have to rebuild things from scratch,
+like a table, that takes a lot of time. With this, everything is generated first before
+outputting it to the console.
 
 ```php
 use Henzeb\Console\Facades\Console;
@@ -83,7 +84,13 @@ class MyClass {
 }
 ```
 
-### Testing
+### replace
+The default `overwrite` method of Symfony is kinda slow when it comes to repeated rendering.
+If you find your console application is flickering, `replace` is a good `replacement`.
+
+Note: `render` and the callback method on `section` are both using `replace` under the hood.
+
+## Testing
 
 ```bash
 composer test
