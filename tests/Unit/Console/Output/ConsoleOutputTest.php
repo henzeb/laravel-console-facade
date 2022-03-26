@@ -20,9 +20,13 @@ class ConsoleOutputTest extends TestCase
         return [ConsoleServiceProvider::class];
     }
 
+    public function testShouldSetInput(): void
+    {
+        $this->assertFalse((new ConsoleOutput())->hasOption('test'));
+    }
+
     public function testShouldAutomaticallySetOutputStyle()
     {
-
         Console::partialMock()->expects('setOutput');
 
         $this->artisan('env');

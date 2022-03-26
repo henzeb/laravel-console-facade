@@ -63,8 +63,7 @@ class ConsoleSectionOutputTest extends TestCase
         $output->setVerbosity(ConsoleOutput::VERBOSITY_NORMAL);
 
         $output->expects('isDecorated')->andReturn(true);
-        $output->expects('overwrite')->with('expectedOutput' . PHP_EOL);
-
+        $output->expects('replace')->with('expectedOutput' . PHP_EOL);
 
         $output->render(
             function (ConsoleSectionOutput $section) {

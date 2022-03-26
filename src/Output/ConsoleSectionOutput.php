@@ -58,10 +58,14 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
 
     private function clearContentCache(): void
     {
-        Closure::bind(function () {
-            $this->content = [];
-            $this->lines = 0;
-        }, $this, SymfonyConsoleSectionOutput::class)();
+        Closure::bind(
+            function () {
+                $this->content = [];
+                $this->lines = 0;
+            },
+            $this,
+            SymfonyConsoleSectionOutput::class
+        )();
     }
 
     /**
@@ -119,7 +123,6 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
 
     public function render(callable $message)
     {
-
         $array = [];
         $streamer = new ConsoleSectionOutput(
             fopen('php://memory', 'rw+'),

@@ -18,9 +18,11 @@ class ConsoleOutput
 
     public function __construct()
     {
+        $this->setInput(new ArrayInput([]));
+
         $this->setOutput(
             new OutputStyle(
-                new ArrayInput([]),
+                $this->getInput(),
                 new SymfonyConsoleOutput()
             )
         );
