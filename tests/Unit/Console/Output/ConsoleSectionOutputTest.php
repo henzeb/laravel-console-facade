@@ -4,7 +4,7 @@ namespace Henzeb\Console\Tests\Unit\Console\Output;
 
 
 use Mockery;
-use ReflectionProperty;
+use Closure;
 use Orchestra\Testbench\TestCase;
 use Symfony\Component\Console\Output\Output;
 use Henzeb\Console\Output\ConsoleSectionOutput;
@@ -21,23 +21,18 @@ class ConsoleSectionOutputTest extends TestCase
         $output = Mockery::mock(ConsoleSectionOutput::class)->makePartial();
         $output->expects('getVerbosity')->times(5)->andReturn(1);
 
-        (new ReflectionProperty($output, 'output'))->setValue($output, $output);
+        Closure::bind(
+            function () use ($output) {
+            $output->output = $output;
+        }, $output, ConsoleSectionOutput::class)();
 
-        (new ReflectionProperty(Output::class, 'formatter'))->setValue($output, new OutputFormatter());
+        Closure::bind(function () {
+            $this->formatter = new OutputFormatter();
+        }, $output, Output::class)();
 
         $output->expects('createProgressBar')->passthru();
 
         $output->withProgressBar(100, fn() => true);
-    }
-
-    protected function providesVerbosityLevels(): array
-    {
-        return [
-            [OutputInterface::VERBOSITY_DEBUG],
-            [OutputInterface::OUTPUT_RAW],
-            [OutputInterface::VERBOSITY_NORMAL],
-            [OutputInterface::VERBOSITY_QUIET],
-        ];
     }
 
     /**
@@ -57,8 +52,14 @@ class ConsoleSectionOutputTest extends TestCase
     {
         $output = Mockery::mock(ConsoleSectionOutput::class)->makePartial();
 
-        (new ReflectionProperty(Output::class, 'formatter'))->setValue($output, new OutputFormatter());
-        (new ReflectionProperty(ConsoleSectionOutput::class, 'input'))->setValue($output, new ArrayInput([]));
+        Closure::bind(function () {
+            $this->formatter = new OutputFormatter();
+        }, $output, Output::class)();
+
+        Closure::bind(function () {
+            $this->input = new ArrayInput([]);
+        }, $output, ConsoleSectionOutput::class)();
+
 
         $output->setVerbosity(ConsoleOutput::VERBOSITY_NORMAL);
 
@@ -85,7 +86,7 @@ class ConsoleSectionOutputTest extends TestCase
         $console->replace('test');
         $console->replace('test2');
         rewind($stream);
-        $this->assertEquals("" ,stream_get_contents($stream));
+        $this->assertEquals("", stream_get_contents($stream));
     }
 
     public function testShouldJustWrite(): void
@@ -116,7 +117,7 @@ class ConsoleSectionOutputTest extends TestCase
         $console->replace('test');
         $console->replace('test2');
         rewind($stream);
-        $this->assertEquals("\e[2Ktest\n\e[0J\e[1A\e[2Ktest2\n\e[0J" ,stream_get_contents($stream));
+        $this->assertEquals("\e[2Ktest\n\e[0J\e[1A\e[2Ktest2\n\e[0J", stream_get_contents($stream));
     }
 
     public function testReplaceUsesWriteMethod(): void
@@ -127,12 +128,8 @@ class ConsoleSectionOutputTest extends TestCase
         $output = Mockery::mock(ConsoleSectionOutput::class)->makePartial();
         $output->expects('isDecorated')->andReturnTrue();
         $output->expects('getStream')->andReturn(fopen('php://memory', 'rw+'));
-        // $output->expects('getVerbosity')->times(5)->andReturn(1);
+
         $output->setVerbosity(ConsoleOutput::VERBOSITY_NORMAL);
-
-        (new ReflectionProperty($output, 'output'))->setValue($output, $output);
-
-        (new ReflectionProperty(Output::class, 'formatter'))->setValue($output, new OutputFormatter());
 
         $output->expects('write')->once();
 
@@ -147,12 +144,8 @@ class ConsoleSectionOutputTest extends TestCase
         $output = Mockery::mock(ConsoleSectionOutput::class)->makePartial();
         $output->expects('isDecorated')->andReturnTrue();
         $output->expects('getStream')->andReturn(fopen('php://memory', 'rw+'));
-        // $output->expects('getVerbosity')->times(5)->andReturn(1);
+
         $output->setVerbosity(ConsoleOutput::VERBOSITY_NORMAL);
-
-        (new ReflectionProperty($output, 'output'))->setValue($output, $output);
-
-        (new ReflectionProperty(Output::class, 'formatter'))->setValue($output, new OutputFormatter());
 
         $output->expects('write')->twice();
 
@@ -167,15 +160,21 @@ class ConsoleSectionOutputTest extends TestCase
         $output = Mockery::mock(ConsoleSectionOutput::class)->makePartial();
         $output->expects('isDecorated')->andReturnTrue();
         $output->expects('getStream')->andReturn(fopen('php://memory', 'rw+'));
-        // $output->expects('getVerbosity')->times(5)->andReturn(1);
+
         $output->setVerbosity(ConsoleOutput::VERBOSITY_NORMAL);
-
-        (new ReflectionProperty($output, 'output'))->setValue($output, $output);
-
-        (new ReflectionProperty(Output::class, 'formatter'))->setValue($output, new OutputFormatter());
 
         $output->expects('write')->twice();
 
         $output->replace(['test', 'test2']);
+    }
+
+    protected function providesVerbosityLevels(): array
+    {
+        return [
+            [OutputInterface::VERBOSITY_DEBUG],
+            [OutputInterface::OUTPUT_RAW],
+            [OutputInterface::VERBOSITY_NORMAL],
+            [OutputInterface::VERBOSITY_QUIET],
+        ];
     }
 }

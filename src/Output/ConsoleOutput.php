@@ -2,7 +2,7 @@
 
 namespace Henzeb\Console\Output;
 
-use ReflectionProperty;
+use Closure;
 use Illuminate\Console\OutputStyle;
 use Symfony\Component\Console\Input\ArrayInput;
 use Illuminate\Console\Concerns\InteractsWithIO;
@@ -18,32 +18,37 @@ class ConsoleOutput
 
     public function __construct()
     {
-        $this->setInput(new ArrayInput([]));
-
         $this->setOutput(
             new OutputStyle(
-                $this->getInput(),
+                new ArrayInput([]),
                 new SymfonyConsoleOutput()
             )
         );
     }
 
-    private function getInput(): InputInterface
+    public function setOutput(OutputStyle $output)
     {
-        if ($this->input) {
-            return $this->input;
-        }
+        $this->output = $output;
 
-        return $this->input = (new ReflectionProperty(
-            SymfonyStyle::class,
-            'input'
-        ))->getValue($this->output);
+        /**
+         * InteractsWithIo does not use getInput
+         */
+        $this->input = $this->getInput();
+    }
+
+    public function getInput(): InputInterface
+    {
+        return Closure::bind(
+            fn() => $this->input,
+            $this->output,
+            SymfonyStyle::class
+        )();
     }
 
     public function section(string $name, callable $render = null): ConsoleSectionOutput
     {
         $section = $this->getSection($name);
-        if($render) {
+        if ($render) {
             $section->render($render);
         }
         return $section;
