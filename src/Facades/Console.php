@@ -14,4 +14,9 @@ class Console extends Facade
     {
         return ConsoleOutput::class;
     }
+
+    public static function isMock(): bool
+    {
+        return parent::isMock();
+    }
 }

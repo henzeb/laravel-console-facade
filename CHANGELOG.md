@@ -2,6 +2,10 @@
 
 All notable changes to `Laravel Console Facade` will be documented in this file
 
+## 1.4.0
+- added exit method to make testing with exits a lot easier.
+- no longer need to expect setOutput when mocking the facade.
+
 ## 1.3.0 - 2022-03-21
 - adds faster section replacement method
 

@@ -5,16 +5,13 @@ namespace Henzeb\Console\Tests\Unit\Console\Output;
 
 use Mockery;
 use Closure;
-use ReflectionProperty;
 use Orchestra\Testbench\TestCase;
 use Henzeb\Console\Facades\Console;
 use Illuminate\Console\OutputStyle;
 use Henzeb\Console\Output\ConsoleOutput;
 use Henzeb\Console\Output\ConsoleSectionOutput;
 use Symfony\Component\Console\Input\ArrayInput;
-use Illuminate\Console\Concerns\InteractsWithIO;
 use Henzeb\Console\Providers\ConsoleServiceProvider;
-
 use Symfony\Component\Console\Output\ConsoleOutput as SymfonyConsoleOutput;
 
 
@@ -37,7 +34,7 @@ class ConsoleOutputTest extends TestCase
         $console->setOutput(new OutputStyle($arrayInput, new SymfonyConsoleOutput()));
         $this->assertFalse((new ConsoleOutput())->hasOption('test'));
 
-        $this->assertTrue($arrayInput===$console->getInput());
+        $this->assertTrue($arrayInput === $console->getInput());
     }
 
     public function testShouldAutomaticallySetOutputStyle()
@@ -84,7 +81,9 @@ class ConsoleOutputTest extends TestCase
         };
         $section->expects('render')->with($expectedCallable);
 
-        Closure::bind(function() use ($section){$this->sections = ['mySection' => $section];}, $output, ConsoleOutput::class)();
+        Closure::bind(function () use ($section) {
+            $this->sections = ['mySection' => $section];
+        }, $output, ConsoleOutput::class)();
         $output->section('mySection', $expectedCallable);
     }
 }

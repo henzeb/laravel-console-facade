@@ -90,6 +90,9 @@ If you find your console application is flickering, `replace` is a good `replace
 
 Note: `render` and the callback method on `section` are both using `replace` under the hood.
 
+### exit
+Exit allows you to call exit anywhere in your code while making it easy to test.
+
 ## Testing
 
 ```bash

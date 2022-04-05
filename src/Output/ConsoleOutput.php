@@ -69,4 +69,9 @@ class ConsoleOutput
             $this->getInput(),
         );
     }
+
+    public function exit(int $exitcode = 0): void
+    {
+        exit($exitcode);
+    }
 }
