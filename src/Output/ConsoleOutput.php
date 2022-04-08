@@ -15,9 +15,15 @@ class ConsoleOutput
     use InteractsWithIO;
 
     private array $sections = [];
+    private array $onExit = [
+        'always' => []
+    ];
+
+    private Closure $exitMethod;
 
     public function __construct()
     {
+        $this->exitMethod = fn(int $exitcode) => exit($exitcode);
         $this->setOutput(
             new OutputStyle(
                 new ArrayInput([]),
@@ -70,8 +76,21 @@ class ConsoleOutput
         );
     }
 
+    public function onExit(callable $onExit, int $exitCode = null): void
+    {
+        $this->onExit[$exitCode ?? 'always'][] = Closure::fromCallable($onExit)->bindTo(null, null);
+    }
+
     public function exit(int $exitcode = 0): void
     {
-        exit($exitcode);
+        foreach ($this->onExit['always'] as $always) {
+            $always($exitcode);
+        }
+
+        foreach ($this->onExit[$exitcode] ?? [] as $onExit) {
+            $onExit();
+        }
+
+        ($this->exitMethod)($exitcode);
     }
 }

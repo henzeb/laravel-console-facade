@@ -93,6 +93,29 @@ Note: `render` and the callback method on `section` are both using `replace` und
 ### exit
 Exit allows you to call exit anywhere in your code while making it easy to test.
 
+```php
+Console::exit();
+Console::exit(1);
+```
+#### exit hooks
+You can also add hooks that will execute when you call `exit`. Be aware that it does not register them as exit 
+functions. 
+
+```php
+Console::onExit(
+    function(int $exitcode) {
+        Console::info('exited with code '.$exitcode);
+    }
+);
+
+Console::onExit(
+    function() {
+        Console::info('exited with code 123');
+    },
+    123
+);
+```
+
 ## Testing
 
 ```bash

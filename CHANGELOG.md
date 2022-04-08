@@ -2,7 +2,10 @@
 
 All notable changes to `Laravel Console Facade` will be documented in this file
 
-## 1.4.0
+## 1.5.0 - 2022-04-08
+- added ability to execute callables on exit 
+
+## 1.4.0 - 2022-04-05
 - added exit method to make testing with exits a lot easier.
 - no longer need to expect setOutput when mocking the facade.
 
