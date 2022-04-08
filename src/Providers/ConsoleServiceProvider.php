@@ -12,9 +12,12 @@ class ConsoleServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->app->afterResolving(OutputStyle::class, function (OutputStyle $outputStyle) {
-            if (!Console::isMock()) {
+
+
+            if ($this->app->environment('testing')) {
                 Console::partialMock();
             }
+
             Console::setOutput($outputStyle);
 
         });

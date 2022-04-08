@@ -81,6 +81,11 @@ class ConsoleOutput
         $this->onExit[$exitCode ?? 'always'][] = Closure::fromCallable($onExit)->bindTo(null, null);
     }
 
+    private function getExitMethod(): callable
+    {
+        return $this->exitMethod =  $this->exitMethod ?? fn(int $exitcode) => exit($exitcode);
+    }
+
     public function exit(int $exitcode = 0): void
     {
         foreach ($this->onExit['always'] as $always) {
@@ -91,6 +96,6 @@ class ConsoleOutput
             $onExit();
         }
 
-        ($this->exitMethod)($exitcode);
+        $this->getExitMethod()($exitcode);
     }
 }
