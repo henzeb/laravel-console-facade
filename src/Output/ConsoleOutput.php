@@ -78,7 +78,7 @@ class ConsoleOutput
 
     public function onExit(callable $onExit, int $exitCode = null): void
     {
-        $this->onExit[$exitCode ?? 'always'][] = Closure::fromCallable($onExit)->bindTo(null, null);
+        $this->onExit[$exitCode ?? 'always'][] = Closure::fromCallable($onExit);
     }
 
     private function getExitMethod(): callable
