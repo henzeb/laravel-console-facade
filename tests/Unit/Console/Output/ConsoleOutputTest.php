@@ -11,6 +11,7 @@ use Illuminate\Console\OutputStyle;
 use Henzeb\Console\Output\ConsoleOutput;
 use Henzeb\Console\Output\ConsoleSectionOutput;
 use Symfony\Component\Console\Input\ArrayInput;
+use Illuminate\Console\View\Components\Factory;
 use Henzeb\Console\Providers\ConsoleServiceProvider;
 use Symfony\Component\Console\Output\ConsoleOutput as SymfonyConsoleOutput;
 
@@ -47,7 +48,8 @@ class ConsoleOutputTest extends TestCase
     public function testShouldHaveDefaultOutput()
     {
         $this->assertInstanceOf(
-            OutputStyle::class, (new ConsoleOutput())->getOutput()
+            OutputStyle::class,
+            (new ConsoleOutput())->getOutput()
         );
     }
 
@@ -90,7 +92,7 @@ class ConsoleOutputTest extends TestCase
     private function mockExit(ConsoleOutput $output, callable $callback = null): void
     {
         Closure::bind(function () use ($callback) {
-            $this->exitMethod = $callback ?? fn()=>true;
+            $this->exitMethod = $callback ?? fn() => true;
         }, $output, ConsoleOutput::class)();
     }
 
@@ -98,19 +100,20 @@ class ConsoleOutputTest extends TestCase
     {
         $output = new ConsoleOutput();
 
-        $this->mockExit($output, function(int $exitcode){
+        $this->mockExit($output, function (int $exitcode) {
             $this->assertEquals(0, $exitcode);
         });
 
         $output->exit();
     }
 
-    public function testShouldCallOnExit() {
+    public function testShouldCallOnExit()
+    {
         $output = new ConsoleOutput();
         $this->mockExit($output);
         $actual = false;
 
-        $output->onExit(function() use (&$actual){
+        $output->onExit(function () use (&$actual) {
             $actual = true;
         });
 
@@ -119,12 +122,13 @@ class ConsoleOutputTest extends TestCase
         $this->assertTrue($actual);
     }
 
-    public function testShouldCallOnExitWithDifferentStatus() {
+    public function testShouldCallOnExitWithDifferentStatus()
+    {
         $output = new ConsoleOutput();
         $this->mockExit($output);
         $actual = false;
 
-        $output->onExit(function() use (&$actual){
+        $output->onExit(function () use (&$actual) {
             $actual = true;
         });
 
@@ -133,16 +137,17 @@ class ConsoleOutputTest extends TestCase
         $this->assertTrue($actual);
     }
 
-    public function testShouldCallTwiceOnExit() {
+    public function testShouldCallTwiceOnExit()
+    {
         $output = new ConsoleOutput();
         $this->mockExit($output);
         $actual = 0;
 
-        $output->onExit(function() use (&$actual){
+        $output->onExit(function () use (&$actual) {
             $actual++;
         });
 
-        $output->onExit(function() use (&$actual){
+        $output->onExit(function () use (&$actual) {
             $actual++;
         });
 
@@ -151,30 +156,32 @@ class ConsoleOutputTest extends TestCase
         $this->assertEquals(2, $actual);
     }
 
-    public function testShouldCallTwiceOnExitWithDifferentStatusCode() {
+    public function testShouldCallTwiceOnExitWithDifferentStatusCode()
+    {
         $output = new ConsoleOutput();
         $this->mockExit($output);
         $actual = 0;
 
-        $output->onExit(function() use (&$actual){
+        $output->onExit(function () use (&$actual) {
             $actual++;
         });
 
-        $output->onExit(function() use (&$actual){
+        $output->onExit(function () use (&$actual) {
             $actual++;
-        },1);
+        }, 1);
 
         $output->exit(1);
 
         $this->assertEquals(2, $actual);
     }
 
-    public function testShouldNotCallWhenStatusCodeDoesNotMatch() {
+    public function testShouldNotCallWhenStatusCodeDoesNotMatch()
+    {
         $output = new ConsoleOutput();
         $this->mockExit($output);
         $actual = false;
 
-        $output->onExit(function() use (&$actual){
+        $output->onExit(function () use (&$actual) {
             $actual = true;
         }, 0);
 
@@ -183,17 +190,40 @@ class ConsoleOutputTest extends TestCase
         $this->assertFalse($actual);
     }
 
-    public function testShouldCallWhenStatusCodeDoesMatch() {
+    public function testShouldCallWhenStatusCodeDoesMatch()
+    {
         $output = new ConsoleOutput();
         $this->mockExit($output);
         $actual = false;
 
-        $output->onExit(function() use (&$actual){
+        $output->onExit(function () use (&$actual) {
             $actual = true;
         }, 1);
 
         $output->exit(1);
 
         $this->assertTrue($actual);
+    }
+
+    public function testShouldReturnComponentsFactory(): void
+    {
+        $output = new ConsoleOutput();
+
+        $expectedOutput = $output->getOutput();
+
+        app()->bind(Factory::class, function ($app, $args) {
+            return new class($args['output']) extends Factory {
+
+            };
+        });
+        $resolved = resolve(Factory::class, ['output' => $expectedOutput]);
+
+        $this->assertEquals(get_class($resolved), get_class($output->components()));
+
+        $actualOutput = Closure::bind(function () {
+            return $this->output;
+        }, $resolved, Factory::class)();
+
+        $this->assertTrue($expectedOutput === $actualOutput);
     }
 }

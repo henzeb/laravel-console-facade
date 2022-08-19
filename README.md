@@ -33,6 +33,23 @@ class MyClass {
 }
 ```
 
+### Laravel's components factory
+Laravel released a new style for their commands, and they use a special Factory for that. With this method, you can use them 
+within your own classes.
+
+```php
+use Henzeb\Console\Facades\Console;
+class MyClass {
+   
+    public function writeMessage(): void
+    {   
+        Console::components()->ask('Would you like to be able to do this?');
+        Console::components()->info('This message was brought to you by Henzeb');
+        Console::components()->bulletList(['this one', 'Another one']);
+    }
+}
+```
+
 ### Section management
 
 The facade also allows you to manage and use sections. Inside the section you can only use the output methods from

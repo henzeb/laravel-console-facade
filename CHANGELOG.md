@@ -2,6 +2,9 @@
 
 All notable changes to `Laravel Console Facade` will be documented in this file
 
+## 1.6.0 - 2022-08-19
+- added components method to the new Components Factory of Laravel
+
 ## 1.5.0 - 2022-04-08
 - added ability to execute callables on exit 
 

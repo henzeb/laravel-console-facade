@@ -5,6 +5,7 @@ namespace Henzeb\Console\Output;
 use Closure;
 use Illuminate\Console\OutputStyle;
 use Symfony\Component\Console\Input\ArrayInput;
+use Illuminate\Console\View\Components\Factory;
 use Illuminate\Console\Concerns\InteractsWithIO;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Input\InputInterface;
@@ -76,9 +77,16 @@ class ConsoleOutput
         );
     }
 
+    public function onSignal(callable $onSignal, int ...$signalNumbers): void
+    {
+        foreach($signalNumbers as $signalNumber) {
+            pcntl_signal($signalNumber, $onSignal);
+        }
+    }
+
     public function onExit(callable $onExit, int $exitCode = null): void
     {
-        $this->onExit[$exitCode ?? 'always'][] = Closure::fromCallable($onExit)->bindTo(null, null);
+        $this->onExit[$exitCode ?? 'always'][] = Closure::fromCallable($onExit);
     }
 
     private function getExitMethod(): callable
@@ -97,5 +105,10 @@ class ConsoleOutput
         }
 
         $this->getExitMethod()($exitcode);
+    }
+
+    public function components(): Factory
+    {
+        return resolve(Factory::class, ['output' => $this->getOutput()]);
     }
 }
