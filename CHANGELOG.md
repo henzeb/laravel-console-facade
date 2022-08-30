@@ -2,6 +2,9 @@
 
 All notable changes to `Laravel Console Facade` will be documented in this file
 
+## 1.7.0 - 2022-08-30
+- added `onSignal`, to allow more control over what happens on given signals.
+
 ## 1.6.0 - 2022-08-19
 - added components method to the new Components Factory of Laravel
 

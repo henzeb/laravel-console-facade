@@ -205,6 +205,135 @@ class ConsoleOutputTest extends TestCase
         $this->assertTrue($actual);
     }
 
+    public function testOnSignal()
+    {
+        $var = null;
+        $output = new ConsoleOutput();
+
+        $output->onSignal(
+            function () use (&$var) {
+                $var = func_get_args();
+            },
+            SIGINT
+        );
+        pcntl_signal_get_handler(SIGINT)(
+            0,
+            [
+                "signo" => 2,
+                "errno" => 0,
+                "code" => 0,
+            ]
+        );
+
+        $this->assertEquals($var, [
+            0,
+            [
+                "signo" => 2,
+                "errno" => 0,
+                "code" => 0,
+            ]
+        ]);
+    }
+
+    public function testOnSignalMultipleSignals()
+    {
+        $var = 0;
+        $output = new ConsoleOutput();
+        $output->onSignal(
+            function () use (&$var) {
+                $var += 1;
+            },
+            SIGINT,
+            SIGTERM
+        );
+        pcntl_signal_get_handler(SIGINT)();
+        pcntl_signal_get_handler(SIGTERM)();
+
+        $this->assertEquals(2, $var);
+    }
+
+    public function testOnSignalMultipleHandlers()
+    {
+        $var = 0;
+        $output = new ConsoleOutput();
+
+        $this->mockExit($output, function () use (&$var) {
+            $var += 4;
+        });
+
+        $output->onSignal(
+            function () use (&$var) {
+                $var += 1;
+            },
+            SIGINT
+        );
+
+        $output->onSignal(
+            function () use (&$var) {
+                $var += 2;
+            },
+            SIGINT
+        );
+        pcntl_signal_get_handler(SIGINT)();
+
+        $this->assertEquals(3, $var);
+    }
+
+    public function testOnSignalMultipleHandlersExit()
+    {
+        $var = 0;
+        $output = new ConsoleOutput();
+        $this->mockExit($output, function () use (&$var) {
+            $var += 4;
+        });
+
+        $output->onSignal(
+            function () use (&$var) {
+                $var += 1;
+                return true;
+            },
+            SIGINT
+        );
+
+        $output->onSignal(
+            function () use (&$var) {
+                $var += 2;
+            },
+            SIGINT
+        );
+        pcntl_signal_get_handler(SIGINT)();
+
+        $this->assertEquals(7, $var);
+    }
+
+    public function testOnSignalMultipleHandlersExitWithOneReturningFalse()
+    {
+        $var = 0;
+        $output = new ConsoleOutput();
+        $this->mockExit($output, function () use (&$var) {
+            $var += 4;
+        });
+
+        $output->onSignal(
+            function () use (&$var) {
+                $var += 1;
+                return true;
+            },
+            SIGINT
+        );
+
+        $output->onSignal(
+            function () use (&$var) {
+                $var += 2;
+                return false;
+            },
+            SIGINT
+        );
+        pcntl_signal_get_handler(SIGINT)();
+
+        $this->assertEquals(7, $var);
+    }
+
     public function testShouldReturnComponentsFactory(): void
     {
         $output = new ConsoleOutput();

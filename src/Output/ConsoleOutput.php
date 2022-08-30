@@ -4,9 +4,8 @@ namespace Henzeb\Console\Output;
 
 use Closure;
 use Illuminate\Console\OutputStyle;
+use Henzeb\Console\Concerns\InteractsWithIO;
 use Symfony\Component\Console\Input\ArrayInput;
-use Illuminate\Console\View\Components\Factory;
-use Illuminate\Console\Concerns\InteractsWithIO;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutput as SymfonyConsoleOutput;
@@ -16,6 +15,7 @@ class ConsoleOutput
     use InteractsWithIO;
 
     private array $sections = [];
+    private array $onSignal = [];
     private array $onExit = [
         'always' => []
     ];
@@ -79,8 +79,25 @@ class ConsoleOutput
 
     public function onSignal(callable $onSignal, int ...$signalNumbers): void
     {
-        foreach($signalNumbers as $signalNumber) {
-            pcntl_signal($signalNumber, $onSignal);
+        foreach ($signalNumbers as $signalNumber) {
+            if (!isset($this->onSignal[$signalNumber])) {
+                pcntl_signal(
+                    $signalNumber,
+                    function () use ($signalNumber) {
+                        $shouldExit = false;
+
+                        foreach ($this->onSignal[$signalNumber] as $callable) {
+                            $shouldExit = $callable(...func_get_args()) ? true : $shouldExit;
+                        }
+
+                        if ($shouldExit) {
+                            $this->exit();
+                        }
+                    }
+                );
+            }
+
+            $this->onSignal[$signalNumber][] = Closure::fromCallable($onSignal);
         }
     }
 
@@ -91,7 +108,7 @@ class ConsoleOutput
 
     private function getExitMethod(): callable
     {
-        return $this->exitMethod =  $this->exitMethod ?? fn(int $exitcode) => exit($exitcode);
+        return $this->exitMethod = $this->exitMethod ?? fn(int $exitcode) => exit($exitcode);
     }
 
     public function exit(int $exitcode = 0): void
@@ -105,10 +122,5 @@ class ConsoleOutput
         }
 
         $this->getExitMethod()($exitcode);
-    }
-
-    public function components(): Factory
-    {
-        return resolve(Factory::class, ['output' => $this->getOutput()]);
     }
 }

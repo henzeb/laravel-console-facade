@@ -63,6 +63,7 @@ class MyClass {
     {   
         Console::section('section1')->table(['header'=>'title'], [[]]);
         Console::section('section2')->withProgressBar(100, fn()=>true);
+        Console::section('section1')->components()->bulletList(['this one', 'Another one']);
         Console::section('section1')->clear();
         Console::section('section3')->info('This message was brought to you by Henzeb');
     }
@@ -132,6 +133,43 @@ Console::onExit(
     123
 );
 ```
+
+#### onSignal
+`onSignal` uses pcntl_signal to register the callbacks. But what's different, `onsignal` will allow you to register
+multiple handlers. This gives you more granular control over what is executed on certain signals without overriding 
+existing handlers.
+
+In below scenario, all three will run when a `SIGINT` signal is given and the second will also run when a `SIGTERM` signal
+is given. The first handler returns true. This means that when all handlers are executed, an exit is given.
+```php
+Console::onSignal(
+    function () {
+        print('first handler');
+        return true;
+    },
+    SIGINT
+);
+
+Console::onSignal(
+    function () {
+        print('second handler');
+        var_dump(func_get_args());
+        return false;
+    },
+    SIGINT,
+    SIGTERM
+);
+
+Console::onSignal(
+    function () {
+        print('third handler');
+    },
+    SIGINT
+);
+```
+
+Tip: When a handler was already registered the normal way, you can use `pcntl_signal_get_handler` to pass this in to
+`onSignal`
 
 ## Testing
 

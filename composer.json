@@ -7,7 +7,7 @@
         "console",
         "facade"
     ],
-    "homepage": "https://github.com/henzeb/laravel-console",
+    "homepage": "https://github.com/henzeb/laravel-console-facade",
     "license": "AGPL-3.0-only",
     "type": "library",
     "authors": [

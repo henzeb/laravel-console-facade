@@ -4,7 +4,8 @@ namespace Henzeb\Console\Output;
 
 use Closure;
 use Generator;
-use Illuminate\Console\Concerns\InteractsWithIO;
+
+use Henzeb\Console\Concerns\InteractsWithIO;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Formatter\OutputFormatterInterface;
