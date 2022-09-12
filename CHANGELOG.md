@@ -2,6 +2,9 @@
 
 All notable changes to `Laravel Console Facade` will be documented in this file
 
+## 1.8.0 - 2022-09-12
+- added `trap`/`untrap` to replace `onSignal` (deprecated now)
+
 ## 1.7.0 - 2022-08-30
 - added `onSignal`, to allow more control over what happens on given signals.
 

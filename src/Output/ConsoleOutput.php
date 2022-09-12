@@ -7,15 +7,16 @@ use Illuminate\Console\OutputStyle;
 use Henzeb\Console\Concerns\InteractsWithIO;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Henzeb\Console\Concerns\InteractsWithSignals;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutput as SymfonyConsoleOutput;
 
 class ConsoleOutput
 {
-    use InteractsWithIO;
+    use InteractsWithIO, InteractsWithSignals;
 
     private array $sections = [];
-    private array $onSignal = [];
+
     private array $onExit = [
         'always' => []
     ];
@@ -75,30 +76,6 @@ class ConsoleOutput
             $this->output->getFormatter(),
             $this->getInput(),
         );
-    }
-
-    public function onSignal(callable $onSignal, int ...$signalNumbers): void
-    {
-        foreach ($signalNumbers as $signalNumber) {
-            if (!isset($this->onSignal[$signalNumber])) {
-                pcntl_signal(
-                    $signalNumber,
-                    function () use ($signalNumber) {
-                        $shouldExit = false;
-
-                        foreach ($this->onSignal[$signalNumber] as $callable) {
-                            $shouldExit = $callable(...func_get_args()) ? true : $shouldExit;
-                        }
-
-                        if ($shouldExit) {
-                            $this->exit();
-                        }
-                    }
-                );
-            }
-
-            $this->onSignal[$signalNumber][] = Closure::fromCallable($onSignal);
-        }
     }
 
     public function onExit(callable $onExit, int $exitCode = null): void

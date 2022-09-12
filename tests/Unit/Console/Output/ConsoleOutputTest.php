@@ -12,12 +12,36 @@ use Henzeb\Console\Output\ConsoleOutput;
 use Henzeb\Console\Output\ConsoleSectionOutput;
 use Symfony\Component\Console\Input\ArrayInput;
 use Illuminate\Console\View\Components\Factory;
+use Henzeb\Console\Concerns\InteractsWithSignals;
 use Henzeb\Console\Providers\ConsoleServiceProvider;
 use Symfony\Component\Console\Output\ConsoleOutput as SymfonyConsoleOutput;
 
 
 class ConsoleOutputTest extends TestCase
 {
+    private function executeHandler(ConsoleOutput $output, int $signal, array $siginfo = null): void
+    {
+        Closure::bind(function (int $signal, array $siginfo = null) {
+            $this->handleSignal($signal, $siginfo);
+        }, $output, ConsoleOutput::class)(
+            $signal,
+            $siginfo
+        );
+    }
+
+    private function executeHandlerRaw(ConsoleOutput $output, ...$signals): void
+    {
+        Closure::bind(function (int ...$signals) {
+            foreach($signals as $signal){
+                foreach($this->signalHandlers[$signal] ?? [] as $signalHandler) {
+                    $signalHandler($signal);
+                }
+            }
+        }, $output, ConsoleOutput::class)(
+            ...$signals,
+        );
+    }
+
     protected function getPackageProviders($app)
     {
         return [ConsoleServiceProvider::class];
@@ -205,54 +229,55 @@ class ConsoleOutputTest extends TestCase
         $this->assertTrue($actual);
     }
 
-    public function testOnSignal()
+    public function testTrap()
     {
         $var = null;
         $output = new ConsoleOutput();
 
-        $output->onSignal(
+        $output->trap(
             function () use (&$var) {
                 $var = func_get_args();
             },
-            SIGINT
+            SIGINT,
         );
-        pcntl_signal_get_handler(SIGINT)(
-            0,
+
+        $this->executeHandler(
+            $output, SIGINT,
             [
-                "signo" => 2,
+                "signo" => SIGINT,
                 "errno" => 0,
                 "code" => 0,
             ]
         );
 
         $this->assertEquals($var, [
-            0,
+            SIGINT,
             [
-                "signo" => 2,
+                "signo" => SIGINT,
                 "errno" => 0,
                 "code" => 0,
             ]
         ]);
     }
 
-    public function testOnSignalMultipleSignals()
+    public function testTrapMultipleSignals()
     {
         $var = 0;
         $output = new ConsoleOutput();
-        $output->onSignal(
-            function () use (&$var) {
-                $var += 1;
+        $output->trap(
+            function ($signal) use (&$var) {
+                $var += $signal;
             },
             SIGINT,
             SIGTERM
         );
-        pcntl_signal_get_handler(SIGINT)();
-        pcntl_signal_get_handler(SIGTERM)();
 
-        $this->assertEquals(2, $var);
+        $this->executeHandlerRaw($output, SIGINT, SIGTERM);
+
+        $this->assertEquals(SIGINT+SIGTERM, $var);
     }
 
-    public function testOnSignalMultipleHandlers()
+    public function testTrapMultipleHandlers()
     {
         $var = 0;
         $output = new ConsoleOutput();
@@ -261,25 +286,25 @@ class ConsoleOutputTest extends TestCase
             $var += 4;
         });
 
-        $output->onSignal(
+        $output->trap(
             function () use (&$var) {
                 $var += 1;
             },
             SIGINT
         );
 
-        $output->onSignal(
+        $output->trap(
             function () use (&$var) {
                 $var += 2;
             },
             SIGINT
         );
-        pcntl_signal_get_handler(SIGINT)();
+        $this->executeHandler($output, SIGINT);
 
         $this->assertEquals(3, $var);
     }
 
-    public function testOnSignalMultipleHandlersExit()
+    public function testTrapMultipleHandlersExit()
     {
         $var = 0;
         $output = new ConsoleOutput();
@@ -287,7 +312,7 @@ class ConsoleOutputTest extends TestCase
             $var += 4;
         });
 
-        $output->onSignal(
+        $output->trap(
             function () use (&$var) {
                 $var += 1;
                 return true;
@@ -295,18 +320,18 @@ class ConsoleOutputTest extends TestCase
             SIGINT
         );
 
-        $output->onSignal(
+        $output->trap(
             function () use (&$var) {
                 $var += 2;
             },
             SIGINT
         );
-        pcntl_signal_get_handler(SIGINT)();
+        $this->executeHandler($output, SIGINT);
 
         $this->assertEquals(7, $var);
     }
 
-    public function testOnSignalMultipleHandlersExitWithOneReturningFalse()
+    public function testTrapMultipleHandlersExitWithOneReturningFalse()
     {
         $var = 0;
         $output = new ConsoleOutput();
@@ -314,7 +339,7 @@ class ConsoleOutputTest extends TestCase
             $var += 4;
         });
 
-        $output->onSignal(
+        $output->trap(
             function () use (&$var) {
                 $var += 1;
                 return true;
@@ -322,14 +347,14 @@ class ConsoleOutputTest extends TestCase
             SIGINT
         );
 
-        $output->onSignal(
+        $output->trap(
             function () use (&$var) {
                 $var += 2;
                 return false;
             },
             SIGINT
         );
-        pcntl_signal_get_handler(SIGINT)();
+        $this->executeHandler($output, SIGINT);
 
         $this->assertEquals(7, $var);
     }

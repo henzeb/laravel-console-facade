@@ -134,15 +134,15 @@ Console::onExit(
 );
 ```
 
-#### onSignal
-`onSignal` uses pcntl_signal to register the callbacks. But what's different, `onsignal` will allow you to register
-multiple handlers. This gives you more granular control over what is executed on certain signals without overriding 
-existing handlers.
+#### trap
+Just like Laravel, there is a `trap` method to register signals. Under the hood, this is not using the logic created by 
+Laravel and Symfony for backwards compatibility reasons, but it's similar. 
+See [#43933](https://github.com/laravel/framework/pull/43933) for more information.
 
 In below scenario, all three will run when a `SIGINT` signal is given and the second will also run when a `SIGTERM` signal
 is given. The first handler returns true. This means that when all handlers are executed, an exit is given.
 ```php
-Console::onSignal(
+Console::trap(
     function () {
         print('first handler');
         return true;
@@ -150,7 +150,7 @@ Console::onSignal(
     SIGINT
 );
 
-Console::onSignal(
+Console::trap(
     function () {
         print('second handler');
         var_dump(func_get_args());
@@ -160,7 +160,7 @@ Console::onSignal(
     SIGTERM
 );
 
-Console::onSignal(
+Console::trap(
     function () {
         print('third handler');
     },
@@ -168,8 +168,21 @@ Console::onSignal(
 );
 ```
 
-Tip: When a handler was already registered the normal way, you can use `pcntl_signal_get_handler` to pass this in to
-`onSignal`
+Tip: When a handler was already registered the normal way or trough 
+Laravel's implementation, you can use `pcntl_signal_get_handler` to pass 
+this in to `trap`
+
+Note: This was previously `onSignal`, but I have deprecated that method as Laravel is using `trap`.
+
+
+### untrap
+Just like laravel, there is an untrap method. This method is automatically called just like the Laravel implementation.
+This is useful when you want to remove the handlers and/or replace them with 
+other handlers.
+
+```php
+Console::untrap();
+```
 
 ## Testing
 

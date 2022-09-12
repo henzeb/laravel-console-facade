@@ -4,6 +4,7 @@ namespace Henzeb\Console\Facades;
 
 use Illuminate\Support\Facades\Facade;
 use Henzeb\Console\Output\ConsoleOutput;
+use Henzeb\Console\Concerns\InteractsWithSignals;
 
 /**
  * @mixin ConsoleOutput
