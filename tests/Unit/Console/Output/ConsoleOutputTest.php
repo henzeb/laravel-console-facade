@@ -262,6 +262,35 @@ class ConsoleOutputTest extends TestCase
         ]);
     }
 
+    public function testRetrap()
+    {
+        $actual = null;
+        $output = new ConsoleOutput();
+
+        $output->trap(
+            function () use (&$actual, $output) {
+                $actual = 1;
+                $output->trap(
+                    function () use (&$actual) {
+                        $actual += 3;
+                    },
+                    SIGINT
+                );
+            },
+            SIGINT,
+        );
+
+        $this->executeHandler(
+            $output, SIGINT
+        );
+
+        $this->executeHandler(
+            $output, SIGINT
+        );
+
+        $this->assertEquals(4, $actual);
+    }
+
     public function testTrapMultipleSignals()
     {
         $var = 0;

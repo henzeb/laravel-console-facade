@@ -190,6 +190,29 @@ Console::trap(
 );
 ```
 
+#### Retrapping
+trap allows you to trap a new signal handler. This is useful when you want 
+to be able to press `CTRL+C` twice. In the example below the next time the 
+signal is received, the application will forcibly exit. 
+
+```php
+Console::trap(
+    function () {
+        print('first handler');
+        
+        Console::trap(
+            function () {
+                print('second handler');
+                return true;
+            }, 
+            SIGINT
+        );
+    },
+    SIGINT
+);
+```
+
+
 Tip: When a handler was already registered the normal way or trough
 Laravel's implementation, you can use `pcntl_signal_get_handler` to pass
 this in to `trap`

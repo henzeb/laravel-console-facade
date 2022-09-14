@@ -62,12 +62,13 @@ trait InteractsWithSignals
     protected function handleSignal(int $signal, $siginfo = null): void
     {
         $shouldExit = false;
+        $signalHandlers = $this->signalHandlers[$signal] ?? [];
 
-        foreach ($this->signalHandlers[$signal] ?? [] as $callable) {
+        $this->untrap();
+
+        foreach ($signalHandlers as $callable) {
             $shouldExit = $callable(...func_get_args()) ? true : $shouldExit;
         }
-
-         $this->untrap();
 
         if ($shouldExit) {
             $this->exit();
