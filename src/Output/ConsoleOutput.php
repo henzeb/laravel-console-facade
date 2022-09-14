@@ -4,6 +4,7 @@ namespace Henzeb\Console\Output;
 
 use Closure;
 use Illuminate\Console\OutputStyle;
+use Symfony\Component\Console\Input\Input;
 use Henzeb\Console\Concerns\InteractsWithIO;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -50,6 +51,35 @@ class ConsoleOutput
             fn() => $this->input,
             $this->output,
             SymfonyStyle::class
+        )();
+    }
+
+    public function mergeOptions(array $options): void
+    {
+        Closure::bind(
+            function() use ($options){
+                $this->options = array_merge(
+                    $this->options,
+                    $options,
+                );
+            },
+            $this->getInput(),
+            Input::class
+        )();
+    }
+
+    public function mergeArguments(array $arguments): void
+    {
+        Closure::bind(
+            function() use ($arguments){
+
+                $this->arguments = array_merge(
+                    $this->arguments,
+                    $arguments,
+                );
+            },
+            $this->getInput(),
+            Input::class
         )();
     }
 

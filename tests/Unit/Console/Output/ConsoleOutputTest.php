@@ -12,8 +12,10 @@ use Henzeb\Console\Output\ConsoleOutput;
 use Henzeb\Console\Output\ConsoleSectionOutput;
 use Symfony\Component\Console\Input\ArrayInput;
 use Illuminate\Console\View\Components\Factory;
-use Henzeb\Console\Concerns\InteractsWithSignals;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Input\InputArgument;
 use Henzeb\Console\Providers\ConsoleServiceProvider;
+use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Output\ConsoleOutput as SymfonyConsoleOutput;
 
 
@@ -32,8 +34,8 @@ class ConsoleOutputTest extends TestCase
     private function executeHandlerRaw(ConsoleOutput $output, ...$signals): void
     {
         Closure::bind(function (int ...$signals) {
-            foreach($signals as $signal){
-                foreach($this->signalHandlers[$signal] ?? [] as $signalHandler) {
+            foreach ($signals as $signal) {
+                foreach ($this->signalHandlers[$signal] ?? [] as $signalHandler) {
                     $signalHandler($signal);
                 }
             }
@@ -274,7 +276,7 @@ class ConsoleOutputTest extends TestCase
 
         $this->executeHandlerRaw($output, SIGINT, SIGTERM);
 
-        $this->assertEquals(SIGINT+SIGTERM, $var);
+        $this->assertEquals(SIGINT + SIGTERM, $var);
     }
 
     public function testTrapMultipleHandlers()
@@ -379,5 +381,66 @@ class ConsoleOutputTest extends TestCase
         }, $resolved, Factory::class)();
 
         $this->assertTrue($expectedOutput === $actualOutput);
+    }
+
+    public function testShouldMergeOptions(): void
+    {
+        $output = new ConsoleOutput();
+        $inputDefinition = new InputDefinition();
+        $output->getInput()->bind(
+            $inputDefinition
+        );
+        $inputDefinition->addOption(
+            new InputOption('anOption', '', InputOption::VALUE_REQUIRED, '', 'actual')
+        );
+
+        $inputDefinition->addOption(
+            new InputOption('anOtherOption', '', InputOption::VALUE_REQUIRED, '', 'expected')
+        );
+
+        $output->mergeOptions([
+            'anOption' => 'expected'
+        ]);
+
+        $this->assertEquals(
+            [
+                'anOption' => 'expected',
+                'anOtherOption' => 'expected',
+            ],
+            $output->options()
+        );
+
+        $this->assertEquals('expected', $output->option('anOption'));
+    }
+
+    public function testShouldMergeArguments(): void
+    {
+        $output = new ConsoleOutput();
+        $inputDefinition = new InputDefinition();
+        $output->getInput()->bind(
+            $inputDefinition
+        );
+
+        $inputDefinition->addArgument(
+            new InputArgument('anArgument', InputArgument::OPTIONAL, '', 'actual')
+        );
+
+        $inputDefinition->addArgument(
+            new InputArgument('anOtherArgument', InputArgument::OPTIONAL, '', 'expected')
+        );
+
+        $output->mergeArguments([
+            'anArgument' => 'expected'
+        ]);
+
+        $this->assertEquals(
+            [
+                'anArgument' => 'expected',
+                'anOtherArgument' => 'expected',
+            ],
+            $output->arguments()
+        );
+
+        $this->assertEquals('expected', $output->argument('anArgument'));
     }
 }

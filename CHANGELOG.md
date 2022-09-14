@@ -2,6 +2,9 @@
 
 All notable changes to `Laravel Console Facade` will be documented in this file
 
+## 1.9.0 - 2022-09-14
+- added `mergeOptions` and `mergeArguments`
+
 ## 1.8.0 - 2022-09-12
 - added `trap`/`untrap` to replace `onSignal` (deprecated now)
 
