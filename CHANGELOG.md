@@ -2,6 +2,11 @@
 
 All notable changes to `Laravel Console Facade` will be documented in this file
 
+## 1.10.0 - 2022-09-15
+- added `optionGiven` and `argumentGiven`
+- added [Conditionable](https://laravel.com/api/master/Illuminate/Support/Traits/Conditionable.html)
+- added [Macroable](https://laravel.com/api/master/Illuminate/Support/Traits/Macroable.html)
+
 ## 1.9.0 - 2022-09-14
 - added `mergeOptions` and `mergeArguments`
 

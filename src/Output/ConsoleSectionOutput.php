@@ -5,7 +5,9 @@ namespace Henzeb\Console\Output;
 use Closure;
 use Generator;
 
+use Illuminate\Support\Traits\Macroable;
 use Henzeb\Console\Concerns\InteractsWithIO;
+use Illuminate\Support\Traits\Conditionable;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Formatter\OutputFormatterInterface;
@@ -13,7 +15,9 @@ use Symfony\Component\Console\Output\ConsoleSectionOutput as SymfonyConsoleSecti
 
 class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
 {
-    use InteractsWithIO {
+    use Conditionable,
+        Macroable,
+        InteractsWithIO {
         anticipate as private;
         ask as private;
         askWithCompletion as private;

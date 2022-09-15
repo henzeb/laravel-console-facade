@@ -150,7 +150,7 @@ Console::onExit(
 );
 ```
 
-#### trap
+### trap
 
 Just like Laravel, there is a `trap` method to register signals. Under the hood,
 this is not using the logic created by
@@ -220,7 +220,7 @@ this in to `trap`
 Note: This was previously `onSignal`, but I have deprecated that method as
 Laravel is using `trap`.
 
-### untrap
+#### untrap
 
 Just like laravel, there is an untrap method. This method is automatically
 called just like the Laravel implementation.
@@ -245,6 +245,44 @@ Console::mergeArguments(['yourArgument'=>true]);
 
 When an option or argument is set through command line, that value will take 
 precedence.
+
+### optionGiven and argumentGiven
+In Laravel's command, it can get pretty confusing to figure out if the user 
+has specified an option or an argument. An option with optional parameter 
+returns null either when set or not set. When you set a default, you could 
+figure it out, but it is not really userfriendly and feels hacky instead of 
+clean code.
+
+The following methods tells you if a user has added the option or argument 
+to the commandline
+
+```php
+
+// artisan your:command --check --test=false
+Console::optionGiven('check');   // returns true
+Console::optionGiven('test');    // returns true
+Console::optionGiven('verify');  // returns false
+
+// artisan your:command verify
+Console::argumentGiven('check');    //returns false
+Console::argumentGiven('verify');   //returns true
+```
+
+### macros
+The Console facade and `Henzeb\Console\Output\ConsoleSectionOutput` are
+Macroable using Laravel's Macroable trait.
+
+```php
+Console::macro(...)
+Henzeb\Console\Output\ConsoleSectionOutput::macro(...)
+```
+See [documentation](https://laravel.com/api/master/Illuminate/Support/Traits/Macroable.html)
+
+
+### conditions
+You can use `when` and `unless` just like you are used to on the facade as 
+well as inside sections. 
+See [documentation](https://laravel.com/api/master/Illuminate/Support/Traits/Conditionable.html)
 
 ## Testing
 

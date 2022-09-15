@@ -169,7 +169,7 @@ class ConsoleSectionOutputTest extends TestCase
         $output->replace(['test', 'test2']);
     }
 
-    protected function providesVerbosityLevels(): array
+    public function providesVerbosityLevels(): array
     {
         return [
             [OutputInterface::VERBOSITY_DEBUG],
@@ -181,6 +181,9 @@ class ConsoleSectionOutputTest extends TestCase
 
     public function testShouldReturnComponentsFactory(): void
     {
+        if(!class_exists('Illuminate\Console\View\Components\Factory')) {
+            $this->markTestSkipped('skipped as it is not available for this version');
+        }
 
         $output = new \Henzeb\Console\Output\ConsoleOutput();
 

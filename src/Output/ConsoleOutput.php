@@ -4,23 +4,29 @@ namespace Henzeb\Console\Output;
 
 use Closure;
 use Illuminate\Console\OutputStyle;
-use Symfony\Component\Console\Input\Input;
+use Illuminate\Support\Traits\Macroable;
 use Henzeb\Console\Concerns\InteractsWithIO;
+use Illuminate\Support\Traits\Conditionable;
+use Henzeb\Console\Concerns\InteractsWithExit;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Henzeb\Console\Concerns\InteractsWithSignals;
+use Henzeb\Console\Concerns\InteractsWithOptions;
 use Symfony\Component\Console\Input\InputInterface;
+use Henzeb\Console\Concerns\InteractsWithArguments;
 use Symfony\Component\Console\Output\ConsoleOutput as SymfonyConsoleOutput;
 
 class ConsoleOutput
 {
-    use InteractsWithIO, InteractsWithSignals;
+    use InteractsWithIO,
+        Conditionable,
+        Macroable,
+        InteractsWithSignals,
+        InteractsWithExit,
+        InteractsWithOptions,
+        InteractsWithArguments;
 
     private array $sections = [];
-
-    private array $onExit = [
-        'always' => []
-    ];
 
     private Closure $exitMethod;
 
@@ -54,35 +60,6 @@ class ConsoleOutput
         )();
     }
 
-    public function mergeOptions(array $options): void
-    {
-        Closure::bind(
-            function() use ($options){
-                $this->options = array_merge(
-                    $this->options,
-                    $options,
-                );
-            },
-            $this->getInput(),
-            Input::class
-        )();
-    }
-
-    public function mergeArguments(array $arguments): void
-    {
-        Closure::bind(
-            function() use ($arguments){
-
-                $this->arguments = array_merge(
-                    $this->arguments,
-                    $arguments,
-                );
-            },
-            $this->getInput(),
-            Input::class
-        )();
-    }
-
     public function section(string $name, callable $render = null): ConsoleSectionOutput
     {
         $section = $this->getSection($name);
@@ -108,26 +85,5 @@ class ConsoleOutput
         );
     }
 
-    public function onExit(callable $onExit, int $exitCode = null): void
-    {
-        $this->onExit[$exitCode ?? 'always'][] = Closure::fromCallable($onExit);
-    }
 
-    private function getExitMethod(): callable
-    {
-        return $this->exitMethod = $this->exitMethod ?? fn(int $exitcode) => exit($exitcode);
-    }
-
-    public function exit(int $exitcode = 0): void
-    {
-        foreach ($this->onExit['always'] as $always) {
-            $always($exitcode);
-        }
-
-        foreach ($this->onExit[$exitcode] ?? [] as $onExit) {
-            $onExit();
-        }
-
-        $this->getExitMethod()($exitcode);
-    }
 }
