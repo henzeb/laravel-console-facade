@@ -8,20 +8,29 @@ trait InteractsWithSignals
 {
     private array $signalHandlers = [];
 
+    private function getCommandName(): string
+    {
+        return $this->input->getFirstArgument() ?? 'default';
+    }
+
     public function trap(callable $callable, int ...$signals): void
     {
+        $commandName = $this->getCommandName();
+
         foreach ($signals as $signal) {
-            if (!isset($this->signalHandlers[$signal])) {
+            if (!isset($this->signalHandlers[$commandName][$signal])) {
                 $this->setPcntlSignalHandler($signal);
             }
 
-            $this->signalHandlers[$signal][] = Closure::fromCallable($callable);
+            $this->signalHandlers[$commandName][$signal][] = Closure::fromCallable($callable);
         }
     }
 
     public function untrap(): void
     {
-        $this->signalHandlers = [];
+        $commandName = $this->getCommandName();
+
+        $this->signalHandlers[$commandName] = [];
     }
 
     protected function shouldUseSignals(): bool
@@ -62,7 +71,10 @@ trait InteractsWithSignals
     protected function handleSignal(int $signal, $siginfo = null): void
     {
         $shouldExit = false;
-        $signalHandlers = $this->signalHandlers[$signal] ?? [];
+
+        $commandName = $this->getCommandName();
+
+        $signalHandlers = $this->signalHandlers[$commandName][$signal] ?? [];
 
         $this->untrap();
 

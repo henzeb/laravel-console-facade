@@ -5,7 +5,10 @@ namespace Henzeb\Console\Tests\Unit\Console\Concerns;
 use Closure;
 
 use Orchestra\Testbench\TestCase;
+use Illuminate\Console\OutputStyle;
 use Henzeb\Console\Output\ConsoleOutput;
+use Symfony\Component\Console\Input\StringInput;
+use Symfony\Component\Console\Output\ConsoleOutput as SymfonyConsoleOutput;
 
 class InteractsWithSignalsTest extends TestCase
 {
@@ -30,7 +33,7 @@ class InteractsWithSignalsTest extends TestCase
     {
         Closure::bind(function (int ...$signals) {
             foreach ($signals as $signal) {
-                foreach ($this->signalHandlers[$signal] ?? [] as $signalHandler) {
+                foreach ($this->signalHandlers['default'][$signal] ?? [] as $signalHandler) {
                     $signalHandler($signal);
                 }
             }
@@ -198,5 +201,40 @@ class InteractsWithSignalsTest extends TestCase
         $this->executeHandler($output, SIGINT);
 
         $this->assertEquals(7, $var);
+    }
+
+    public function testShouldTrapUnderOwnName() {
+        $var = 0;
+        $output = new ConsoleOutput();
+        $output->setOutput(
+            new OutputStyle(
+                new StringInput('myapplication'),
+                new SymfonyConsoleOutput()
+            )
+        );
+        $output->trap(
+            function () use (&$var) {
+                $var += 1;
+            },
+            SIGINT
+        );
+
+        $output->setOutput(
+            new OutputStyle(
+                new StringInput('myOtherApplication'),
+                new SymfonyConsoleOutput()
+            )
+        );
+
+        $output->trap(
+            function () use (&$var) {
+                $var += 2;
+            },
+            SIGINT
+        );
+
+        $this->executeHandler($output, SIGINT);
+
+        $this->assertEquals(2, $var);
     }
 }

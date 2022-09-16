@@ -223,9 +223,8 @@ Laravel is using `trap`.
 #### untrap
 
 Just like laravel, there is an untrap method. This method is automatically
-called just like the Laravel implementation.
-This is useful when you want to remove the handlers and/or replace them with
-other handlers.
+called just like the Laravel implementation, so you can use `Artisan::call` 
+within your command and not execute the wrong signal handlers.
 
 ```php
 Console::untrap();
