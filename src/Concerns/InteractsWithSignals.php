@@ -62,6 +62,8 @@ trait InteractsWithSignals
             return;
         }
 
+        pcntl_async_signals(true);
+
         pcntl_signal(
             $signal,
             Closure::fromCallable([$this, 'handleSignal'])

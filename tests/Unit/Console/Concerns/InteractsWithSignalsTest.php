@@ -4,6 +4,7 @@ namespace Henzeb\Console\Tests\Unit\Console\Concerns;
 
 use Closure;
 
+use Mockery;
 use Orchestra\Testbench\TestCase;
 use Illuminate\Console\OutputStyle;
 use Henzeb\Console\Output\ConsoleOutput;
@@ -40,6 +41,17 @@ class InteractsWithSignalsTest extends TestCase
         }, $output, ConsoleOutput::class)(
             ...$signals,
         );
+    }
+
+    public function testOnSignalShouldCallTrap()
+    {
+        $output = $this->mock(ConsoleOutput::class)->makePartial();
+        $callable = fn() => false;
+        $output->shouldReceive('trap')
+            ->once()
+            ->withArgs([$callable, SIGTERM]);
+
+        $output->onSignal($callable, SIGTERM);
     }
 
     public function testTrap()
@@ -126,9 +138,7 @@ class InteractsWithSignalsTest extends TestCase
         $var = 0;
         $output = new ConsoleOutput();
 
-        $this->mockExit($output, function () use (&$var) {
-            $var += 4;
-        });
+        $output->shouldNotExit();
 
         $output->trap(
             function () use (&$var) {
@@ -152,9 +162,7 @@ class InteractsWithSignalsTest extends TestCase
     {
         $var = 0;
         $output = new ConsoleOutput();
-        $this->mockExit($output, function () use (&$var) {
-            $var += 4;
-        });
+        $output->shouldExit();
 
         $output->trap(
             function () use (&$var) {
@@ -172,16 +180,14 @@ class InteractsWithSignalsTest extends TestCase
         );
         $this->executeHandler($output, SIGINT);
 
-        $this->assertEquals(7, $var);
+        $this->assertEquals(3, $var);
     }
 
     public function testTrapMultipleHandlersExitWithOneReturningFalse()
     {
         $var = 0;
         $output = new ConsoleOutput();
-        $this->mockExit($output, function () use (&$var) {
-            $var += 4;
-        });
+        $output->shouldExit();
 
         $output->trap(
             function () use (&$var) {
@@ -200,10 +206,11 @@ class InteractsWithSignalsTest extends TestCase
         );
         $this->executeHandler($output, SIGINT);
 
-        $this->assertEquals(7, $var);
+        $this->assertEquals(3, $var);
     }
 
-    public function testShouldTrapUnderOwnName() {
+    public function testShouldTrapUnderOwnName()
+    {
         $var = 0;
         $output = new ConsoleOutput();
         $output->setOutput(

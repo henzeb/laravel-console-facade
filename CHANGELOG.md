@@ -2,6 +2,11 @@
 
 All notable changes to `Laravel Console Facade` will be documented in this file
 
+## 1.12.0 - 2022-09-18
+- added `watch` to emulate the watch application on Linux
+- added a lot of tests
+- added a few convenient methods for your testing purposes
+
 ## 1.11.0 - 2022-09-16
 - Console is now isolated within `Artisan::call` commands.
 - trap/untrap can now operate the same as the Laravel implementation

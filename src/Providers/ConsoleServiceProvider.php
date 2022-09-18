@@ -17,9 +17,11 @@ class ConsoleServiceProvider extends ServiceProvider
         $this->app->afterResolving(
             OutputStyle::class,
             function (OutputStyle $outputStyle) {
-                if ($this->app->environment('testing')) {
+
+                if ($this->app->runningUnitTests()) {
                     Console::partialMock();
                 }
+
                 if (Console::getOutput()) {
                     OutputStore::add(Console::getOutput());
                 }

@@ -9,7 +9,7 @@ use Orchestra\Testbench\TestCase;
 use Symfony\Component\Console\Output\Output;
 use Henzeb\Console\Output\ConsoleSectionOutput;
 use Symfony\Component\Console\Input\ArrayInput;
-use Illuminate\Console\View\Components\Factory;
+use Illuminate\Console\View\Components\Factory; // leave it, for Laravel 9.21+
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Formatter\OutputFormatter;
@@ -179,6 +179,10 @@ class ConsoleSectionOutputTest extends TestCase
         ];
     }
 
+    /**
+     * Test for Laravel 9.21+
+     * @return void
+     */
     public function testShouldReturnComponentsFactory(): void
     {
         if(!class_exists('Illuminate\Console\View\Components\Factory')) {

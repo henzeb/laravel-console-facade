@@ -2,7 +2,8 @@
 
 namespace Henzeb\Console\Tests\Unit\Console\Concerns;
 
-use PHPUnit\Framework\TestCase;
+
+use Orchestra\Testbench\TestCase;
 use Illuminate\Console\OutputStyle;
 use Henzeb\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Input\ArrayInput;

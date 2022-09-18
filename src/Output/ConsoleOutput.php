@@ -2,18 +2,24 @@
 
 namespace Henzeb\Console\Output;
 
+
 use Closure;
+use RuntimeException;
 use Illuminate\Console\OutputStyle;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Traits\Macroable;
 use Henzeb\Console\Concerns\InteractsWithIO;
 use Illuminate\Support\Traits\Conditionable;
 use Henzeb\Console\Concerns\InteractsWithExit;
+use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\ArrayInput;
+use Henzeb\Console\Concerns\InteractsWithSleep;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Henzeb\Console\Concerns\InteractsWithSignals;
 use Henzeb\Console\Concerns\InteractsWithOptions;
 use Symfony\Component\Console\Input\InputInterface;
 use Henzeb\Console\Concerns\InteractsWithArguments;
+use Henzeb\Console\Concerns\InteractsWithInfiniteLoop;
 use Symfony\Component\Console\Output\ConsoleOutput as SymfonyConsoleOutput;
 
 class ConsoleOutput
@@ -22,20 +28,19 @@ class ConsoleOutput
         Conditionable,
         Macroable,
         InteractsWithSignals,
+        InteractsWithInfiniteLoop,
         InteractsWithExit,
+        InteractsWithSleep,
         InteractsWithOptions,
         InteractsWithArguments;
 
     private array $sections = [];
 
-    private Closure $exitMethod;
-
     public function __construct()
     {
-        $this->exitMethod = fn(int $exitcode) => exit($exitcode);
         $this->setOutput(
             new OutputStyle(
-                new ArrayInput([]),
+                App::runningUnitTests() ? new ArrayInput([]) : new ArgvInput(),
                 new SymfonyConsoleOutput()
             )
         );
@@ -46,7 +51,7 @@ class ConsoleOutput
         $this->output = $output;
 
         /**
-         * InteractsWithIo does not use getInput
+         * InteractsWithIO does not use getInput
          */
         $this->input = $this->getInput();
     }
@@ -69,6 +74,25 @@ class ConsoleOutput
         return $section;
     }
 
+    public function watch(
+        callable $render,
+        int $refreshRate = 2,
+        string $sectionName = null
+    ): void {
+        if ($refreshRate <= 0) {
+            throw new RuntimeException('The refresh rate for watch cannot be lower than 1');
+        }
+
+        $sectionName = $sectionName ?? uniqid();
+
+        while ($this->infiniteLoop()) {
+            $this->section($sectionName)
+                ->render($render);
+
+            $this->sleep($refreshRate);
+        }
+    }
+
     private function getSection(string $name): ConsoleSectionOutput
     {
         if (isset($this->sections[$name])) {
@@ -84,6 +108,4 @@ class ConsoleOutput
             $this->getInput(),
         );
     }
-
-
 }

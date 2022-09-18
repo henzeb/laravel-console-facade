@@ -4,7 +4,6 @@ namespace Henzeb\Console\Output;
 
 use Closure;
 use Generator;
-
 use Illuminate\Support\Traits\Macroable;
 use Henzeb\Console\Concerns\InteractsWithIO;
 use Illuminate\Support\Traits\Conditionable;
@@ -34,8 +33,7 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
         bool $decorated,
         OutputFormatterInterface $formatter,
         InputInterface $input
-    )
-    {
+    ) {
         $this->input = $input;
         $this->output = $this;
 
@@ -60,21 +58,7 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
         parent::setVerbosity($level);
     }
 
-
-    private function clearContentCache(): void
-    {
-        Closure::bind(
-            function () {
-                $this->content = [];
-                $this->lines = 0;
-            },
-            $this,
-            SymfonyConsoleSectionOutput::class
-        )();
-    }
-
     /**
-     *
      * @param $message iterable|string
      * @return void
      */
@@ -119,6 +103,18 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
         fwrite($stream, "\x1b[0J");
     }
 
+    private function clearContentCache(): void
+    {
+        Closure::bind(
+            function () {
+                $this->content = [];
+                $this->lines = 0;
+            },
+            $this,
+            SymfonyConsoleSectionOutput::class
+        )();
+    }
+
     private function toGenerator(iterable $iterable): Generator
     {
         foreach ($iterable as $key => $value) {
@@ -138,7 +134,7 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
             $this->input
         );
 
-        $message($streamer);
+        Closure::fromCallable($message)($streamer);
 
         $this->replace($streamer->getContent());
     }

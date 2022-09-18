@@ -2,26 +2,44 @@
 
 namespace Henzeb\Console\Tests\Unit\Console\Concerns;
 
-use Closure;
-use PHPUnit\Framework\TestCase;
+use RuntimeException;
+use Orchestra\Testbench\TestCase;
+use Illuminate\Support\Facades\App;
 use Henzeb\Console\Output\ConsoleOutput;
+
 
 class InteractsWithExitTest extends TestCase
 {
-    private function mockExit(ConsoleOutput $output, callable $callback = null): void
+    public function providesMethods(): array
     {
-        Closure::bind(function () use ($callback) {
-            $this->exitMethod = $callback ?? fn() => true;
-        }, $output, ConsoleOutput::class)();
+        return [
+            'shouldExit' => ['shouldExit'],
+            'shouldNotExit' => ['shouldNotExit'],
+            'shouldExitWith' => ['shouldExitWith'],
+        ];
+    }
+
+    /**
+     * @param string $method
+     * @return void
+     *
+     * @dataProvider providesMethods
+     */
+    public function testShouldThrowExceptionWhenNotInUnitTests(string $method)
+    {
+        App::shouldReceive('runningUnitTests')
+            ->andReturn(false);
+        $this->expectException(RuntimeException::class);
+        $output = new ConsoleOutput();
+
+        $output->$method(1);
     }
 
     public function testShouldExit(): void
     {
         $output = new ConsoleOutput();
 
-        $this->mockExit($output, function (int $exitcode) {
-            $this->assertEquals(0, $exitcode);
-        });
+        $output->shouldExit();
 
         $output->exit();
     }
@@ -29,7 +47,7 @@ class InteractsWithExitTest extends TestCase
     public function testShouldCallOnExit()
     {
         $output = new ConsoleOutput();
-        $this->mockExit($output);
+        $output->shouldExit();
         $actual = false;
 
         $output->onExit(function () use (&$actual) {
@@ -44,7 +62,7 @@ class InteractsWithExitTest extends TestCase
     public function testShouldCallOnExitWithDifferentStatus()
     {
         $output = new ConsoleOutput();
-        $this->mockExit($output);
+        $output->shouldExitWith(1);
         $actual = false;
 
         $output->onExit(function () use (&$actual) {
@@ -59,7 +77,7 @@ class InteractsWithExitTest extends TestCase
     public function testShouldCallTwiceOnExit()
     {
         $output = new ConsoleOutput();
-        $this->mockExit($output);
+        $output->shouldExit();
         $actual = 0;
 
         $output->onExit(function () use (&$actual) {
@@ -78,7 +96,7 @@ class InteractsWithExitTest extends TestCase
     public function testShouldCallTwiceOnExitWithDifferentStatusCode()
     {
         $output = new ConsoleOutput();
-        $this->mockExit($output);
+        $output->shouldExitWith(1);
         $actual = 0;
 
         $output->onExit(function () use (&$actual) {
@@ -97,7 +115,7 @@ class InteractsWithExitTest extends TestCase
     public function testShouldNotCallWhenStatusCodeDoesNotMatch()
     {
         $output = new ConsoleOutput();
-        $this->mockExit($output);
+        $output->shouldExitWith(1);
         $actual = false;
 
         $output->onExit(function () use (&$actual) {
@@ -112,7 +130,7 @@ class InteractsWithExitTest extends TestCase
     public function testShouldCallWhenStatusCodeDoesMatch()
     {
         $output = new ConsoleOutput();
-        $this->mockExit($output);
+        $output->shouldExitWith(1);
         $actual = false;
 
         $output->onExit(function () use (&$actual) {
@@ -122,5 +140,11 @@ class InteractsWithExitTest extends TestCase
         $output->exit(1);
 
         $this->assertTrue($actual);
+    }
+
+    public function testShouldNotExit(): void
+    {
+        $output = new ConsoleOutput();
+        $output->shouldNotExit();
     }
 }

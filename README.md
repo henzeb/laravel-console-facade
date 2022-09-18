@@ -121,6 +121,37 @@ good `replacement`.
 Note: `render` and the callback method on `section` are both using `replace`
 under the hood.
 
+### watch
+`watch` is a method that mimics the `watch` command in Linux. By default it 
+will execute the given callback every 2 seconds.
+
+```php
+Console::watch(
+    function (ConsoleSectionOutput $output) {
+        $output->info(now()->toDateTimeString());
+    },
+);
+```
+You can specify the refresh rate to speed up or slow down the loop.
+```php
+Console::watch(
+    function (ConsoleSectionOutput $output) {
+        $output->info(now()->toDateTimeString());
+    },
+    1
+);
+```
+It is also possible to specify the name for the section yourself. That way 
+you can manipulate the section inside for example a `trap` signal. 
+```php
+Console::watch(
+    function (ConsoleSectionOutput $output) {
+        $output->info(now()->toDateTimeString());
+    },
+    sectionName: 'yourName'
+);
+```
+
 ### exit
 
 Exit allows you to call exit anywhere in your code while making it easy to test.
@@ -284,12 +315,26 @@ well as inside sections.
 See [documentation](https://laravel.com/api/master/Illuminate/Support/Traits/Conditionable.html)
 
 ## Testing
+Next to the usual Facade test options, I have added some convenient 
+methods for use inside your tests.
+
+```php
+Console::shouldExit();
+Console::shouldNotExit();
+Console::shouldExitWith(int $seconds);
+Console::shouldSleep();
+Console::shouldNotSleep();
+Console::shouldSleepWith(int $seconds);
+Console::watchShouldLoop(int $times, int $sleep = null);
+```
+
+## Testing this package
 
 ```bash
 composer test
 ```
 
-### Changelog
+## Changelog
 
 Please see [CHANGELOG](CHANGELOG.md) for more information what has changed
 recently.
@@ -298,7 +343,7 @@ recently.
 
 Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
-### Security
+## Security
 
 If you discover any security related issues, please email
 henzeberkheij@gmail.com instead of using the issue tracker.
