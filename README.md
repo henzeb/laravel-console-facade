@@ -122,7 +122,8 @@ Note: `render` and the callback method on `section` are both using `replace`
 under the hood.
 
 ### watch
-`watch` is a method that mimics the `watch` command in Linux. By default it 
+
+`watch` is a method that mimics the `watch` command in Linux. By default it
 will execute the given callback every 2 seconds.
 
 ```php
@@ -132,7 +133,9 @@ Console::watch(
     },
 );
 ```
+
 You can specify the refresh rate to speed up or slow down the loop.
+
 ```php
 Console::watch(
     function (ConsoleSectionOutput $output) {
@@ -141,8 +144,10 @@ Console::watch(
     1
 );
 ```
-It is also possible to specify the name for the section yourself. That way 
-you can manipulate the section inside for example a `trap` signal. 
+
+It is also possible to specify the name for the section yourself. That way
+you can manipulate the section inside for example a `trap` signal.
+
 ```php
 Console::watch(
     function (ConsoleSectionOutput $output) {
@@ -222,9 +227,10 @@ Console::trap(
 ```
 
 #### Retrapping
-trap allows you to trap a new signal handler. This is useful when you want 
-to be able to press `CTRL+C` twice. In the example below the next time the 
-signal is received, the application will forcibly exit. 
+
+trap allows you to trap a new signal handler. This is useful when you want
+to be able to press `CTRL+C` twice. In the example below the next time the
+signal is received, the application will forcibly exit.
 
 ```php
 Console::trap(
@@ -243,7 +249,6 @@ Console::trap(
 );
 ```
 
-
 Tip: When a handler was already registered the normal way or trough
 Laravel's implementation, you can use `pcntl_signal_get_handler` to pass
 this in to `trap`
@@ -254,7 +259,7 @@ Laravel is using `trap`.
 #### untrap
 
 Just like laravel, there is an untrap method. This method is automatically
-called just like the Laravel implementation, so you can use `Artisan::call` 
+called just like the Laravel implementation, so you can use `Artisan::call`
 within your command and not execute the wrong signal handlers.
 
 ```php
@@ -264,8 +269,8 @@ Console::untrap();
 ### Merging options and arguments
 
 In some cases you may want to merge options or arguments, like resuming a
-process with specific options or arguments stored in cache, 
-or to reconfigure a running daemon process. 
+process with specific options or arguments stored in cache,
+or to reconfigure a running daemon process.
 
 ```php
 Console::mergeOptions(['env'=>'production']);
@@ -273,17 +278,18 @@ Console::mergeOptions(['env'=>'production']);
 Console::mergeArguments(['yourArgument'=>true]);
 ```
 
-When an option or argument is set through command line, that value will take 
+When an option or argument is set through command line, that value will take
 precedence.
 
 ### optionGiven and argumentGiven
-In Laravel's command, it can get pretty confusing to figure out if the user 
-has specified an option or an argument. An option with optional parameter 
-returns null either when set or not set. When you set a default, you could 
-figure it out, but it is not really userfriendly and feels hacky instead of 
+
+In Laravel's `Command`, it can get pretty confusing to figure out if the user
+has specified an option or an argument. An option with optional parameter
+returns null either when set or not set. When you set a default, you could
+figure it out, but it is not really userfriendly and feels hacky instead of
 clean code.
 
-The following methods tells you if a user has added the option or argument 
+The following methods tells you if a user has added the option or argument
 to the commandline
 
 ```php
@@ -298,7 +304,83 @@ Console::argumentGiven('check');    //returns false
 Console::argumentGiven('verify');   //returns true
 ```
 
+## Validation
+Whether you build a console application that is going to be distributed, or
+just want to make sure no one can derail your application, you want to use
+validation. Laravel Console Facade makes that very easy to do.
+
+Suppose you want to validate the input from the following signature:
+
+```
+{id?} {--name=} {--age=*} {--birth=}
+```
+
+Inside the `configure` method you simply define the following:
+
+```php
+Console::validateWith(
+    [
+        'id' => 'bail|int|exists:users',
+        '--name'=>'string|min:2',
+        '--age.*' => 'bail|int|between:0,150',
+        '--birth' => 'bail|prohibits:--age|date'
+    ]
+);
+```
+
+When running your command, the validation will automatically execute.
+
+Under the hood, this uses Laravel's validation engine, so everything that 
+the validation engine accepts, you can use here. 
+
+Caveat: When you want to validate options against arguments or options that 
+may not be passed, you may need to write your own `Rule` or closure.
+
+### Messages
+Since the translations are mainly based upon input coming from HTTP requests, 
+you may want to give them different translations. Just add a second array 
+like you would do with Laravel's validation engine:
+
+````php
+
+Console::validateWith(
+    [
+        'id' => 'bail|int|exists:users',
+        '--name' => 'string|min:2',
+        '--age.*' => 'bail|exclude_with:--birth|int|between:0,150',
+        '--birth' => 'bail|prohibits:--age|date',
+    ],
+    [
+        'exists' => 'User with given id does not exist!'
+        'prohibits' => 'Cannot be used together with :other'
+    ]   
+);
+````
+
+### Closure based commands
+When running `ClosureCommands` defined with `Artisan::command()` it does not
+validate automatically. Instead, you can do the following:
+
+````php
+Artisan::command(
+    'your:command {id?} {--name=} {--age=*} {--birth=}',
+    function () {
+
+        Console::validateWith(
+            [
+                //
+            ]
+        );
+
+        Console::validate();
+        
+        //
+    }
+);
+````
+
 ### macros
+
 The Console facade and `Henzeb\Console\Output\ConsoleSectionOutput` are
 Macroable using Laravel's Macroable trait.
 
@@ -306,16 +388,18 @@ Macroable using Laravel's Macroable trait.
 Console::macro(...)
 Henzeb\Console\Output\ConsoleSectionOutput::macro(...)
 ```
+
 See [documentation](https://laravel.com/api/master/Illuminate/Support/Traits/Macroable.html)
 
-
 ### conditions
-You can use `when` and `unless` just like you are used to on the facade as 
-well as inside sections. 
+
+You can use `when` and `unless` just like you are used to on the facade as
+well as inside sections.
 See [documentation](https://laravel.com/api/master/Illuminate/Support/Traits/Conditionable.html)
 
 ## Testing
-Next to the usual Facade test options, I have added some convenient 
+
+Next to the usual Facade test options, I have added some convenient
 methods for use inside your tests.
 
 ```php

@@ -43,7 +43,7 @@ class ConsoleOutputTest extends TestCase
 
     public function testShouldAutomaticallySetOutputStyle()
     {
-        Console::partialMock()->expects('setOutput');
+        Console::partialMock()->expects('setOutput')->atLeast()->once();
 
         $this->artisan('env');
     }

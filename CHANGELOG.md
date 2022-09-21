@@ -2,6 +2,9 @@
 
 All notable changes to `Laravel Console Facade` will be documented in this file
 
+## 1.13.0 - 2022-09-22
+- added Validation for easy validating input from commandline
+
 ## 1.12.0 - 2022-09-18
 - added `watch` to emulate the watch application on Linux
 - added a lot of tests

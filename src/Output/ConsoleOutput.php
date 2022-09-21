@@ -8,6 +8,7 @@ use RuntimeException;
 use Illuminate\Console\OutputStyle;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Traits\Macroable;
+use Henzeb\Console\Concerns\ValidatesInput;
 use Henzeb\Console\Concerns\InteractsWithIO;
 use Illuminate\Support\Traits\Conditionable;
 use Henzeb\Console\Concerns\InteractsWithExit;
@@ -17,6 +18,7 @@ use Henzeb\Console\Concerns\InteractsWithSleep;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Henzeb\Console\Concerns\InteractsWithSignals;
 use Henzeb\Console\Concerns\InteractsWithOptions;
+use Henzeb\Console\Concerns\InteractsWithCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Henzeb\Console\Concerns\InteractsWithArguments;
 use Henzeb\Console\Concerns\InteractsWithInfiniteLoop;
@@ -24,17 +26,20 @@ use Symfony\Component\Console\Output\ConsoleOutput as SymfonyConsoleOutput;
 
 class ConsoleOutput
 {
-    use InteractsWithIO,
-        Conditionable,
+    private array $sections = [];
+
+    use
         Macroable,
-        InteractsWithSignals,
-        InteractsWithInfiniteLoop,
+        Conditionable,
+        ValidatesInput,
+        InteractsWithIO,
         InteractsWithExit,
         InteractsWithSleep,
+        InteractsWithSignals,
         InteractsWithOptions,
-        InteractsWithArguments;
-
-    private array $sections = [];
+        InteractsWithCommand,
+        InteractsWithArguments,
+        InteractsWithInfiniteLoop;
 
     public function __construct()
     {
