@@ -9,8 +9,8 @@ use Illuminate\Console\OutputStyle;
 use Illuminate\Support\Facades\Artisan;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
-use Henzeb\Console\Providers\ConsoleServiceProvider;
 use Symfony\Component\Console\Input\InputDefinition;
+use Henzeb\Console\Providers\ConsoleServiceProvider;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Henzeb\Console\Tests\Unit\Console\Concerns\Stub\StubCommandServiceProvider;
 
@@ -18,7 +18,7 @@ class ValidatesInputTest extends TestCase
 {
     protected function getPackageProviders($app)
     {
-        return [StubCommandServiceProvider::class, ConsoleServiceProvider::class];
+        return [ConsoleServiceProvider::class, StubCommandServiceProvider::class];
     }
 
 
@@ -75,7 +75,7 @@ class ValidatesInputTest extends TestCase
 
         try {
             Console::validate();
-        }catch(InvalidArgumentException $exception) {
+        } catch (InvalidArgumentException $exception) {
             $this->assertStringContainsString('--opt_value', $exception->getMessage());
             $this->assertStringNotContainsString('The opt_value', $exception->getMessage());
             throw $exception;
@@ -131,8 +131,7 @@ class ValidatesInputTest extends TestCase
 
         try {
             Console::validate();
-        }catch(InvalidArgumentException $exception) {
-
+        } catch (InvalidArgumentException $exception) {
             $this->assertStringContainsString('The arg required', $exception->getMessage());
             $this->assertStringNotContainsString('--arg_required', $exception->getMessage());
             throw $exception;
@@ -165,5 +164,12 @@ class ValidatesInputTest extends TestCase
     public function testAutomatedValidationSucceeds()
     {
         $this->assertEquals(0, Artisan::call('test:test', ['--test' => 'ab']));
+    }
+
+    public function testClosureCommand()
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        Artisan::call('test:closure', ['--test' => 'a']);
     }
 }

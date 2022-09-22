@@ -26,6 +26,14 @@ trait ValidatesInput
         )();
     }
 
+    private function commandToValidateWithDefault() {
+        $this->setCommandToValidateWith('default');
+    }
+
+    private function setCommandToValidateWith(string $command) {
+        $this->commandToValidateWith = $command;
+    }
+
     public function validateWith(array $rules, array $messages = []): void
     {
         $this->rules[$this->commandToValidateWith] = $rules;

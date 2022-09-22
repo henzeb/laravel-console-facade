@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Event;
 use Henzeb\Console\Stores\OutputStore;
 use Illuminate\Support\ServiceProvider;
 use Henzeb\Console\Output\ConsoleOutput;
-use Henzeb\Console\Concerns\ValidatesInput;
 use Illuminate\Console\Events\CommandFinished;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -20,8 +19,9 @@ class ConsoleServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        app(ConsoleOutput::class);
         $this->afterResolvingOutputStyle();
+
+        $this->beforeResolvingCommand();
 
         $this->afterResolvingCommand();
 
@@ -45,40 +45,23 @@ class ConsoleServiceProvider extends ServiceProvider
         );
     }
 
-    /**
-     * @return void
-     */
-    protected function listenToCommandFinished(): void
-    {
-        Event::listen(
-            CommandFinished::class,
-            function () {
-                if (OutputStore::hasOutputs()) {
-                    Console::setOutput(
-                        OutputStore::pop()
-                    );
-                }
-            }
-        );
-    }
-
-    /**
-     * @return void
-     */
-    protected function afterResolvingCommand(): void
+    private function beforeResolvingCommand(): void
     {
         $this->app->beforeResolving(
             Command::class,
             Closure::bind(
                 function (string $command) {
-                    $this->commandToValidateWith = $command;
+                    /** @var $this ConsoleOutput */
+                    $this->setCommandToValidateWith($command);
                 },
                 Console::getFacadeRoot(),
                 ConsoleOutput::class
             )
         );
+    }
 
-
+    protected function afterResolvingCommand(): void
+    {
         $this->app->afterResolving(
             Command::class,
             function (Command $command) {
@@ -102,6 +85,32 @@ class ConsoleServiceProvider extends ServiceProvider
                         Command::class
                     )
                 );
+            }
+        );
+
+        $this->app->afterResolving(
+            Command::class,
+            Closure::bind(
+                function () {
+                    /** @var $this ConsoleOutput */
+                    $this->commandToValidateWithDefault();
+                },
+                Console::getFacadeRoot(),
+                ConsoleOutput::class
+            )
+        );
+    }
+
+    protected function listenToCommandFinished(): void
+    {
+        Event::listen(
+            CommandFinished::class,
+            function () {
+                if (OutputStore::hasOutputs()) {
+                    Console::setOutput(
+                        OutputStore::pop()
+                    );
+                }
             }
         );
     }
