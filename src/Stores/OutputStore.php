@@ -6,7 +6,7 @@ use Illuminate\Console\OutputStyle;
 
 abstract class OutputStore
 {
-    private static array $outputs = [];
+    protected static array $outputs = [];
 
     public static function add(OutputStyle $output): void
     {

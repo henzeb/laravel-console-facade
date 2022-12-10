@@ -9,10 +9,12 @@ use Orchestra\Testbench\TestCase;
 use Symfony\Component\Console\Output\Output;
 use Henzeb\Console\Output\ConsoleSectionOutput;
 use Symfony\Component\Console\Input\ArrayInput;
-use Illuminate\Console\View\Components\Factory; // leave it, for Laravel 9.21+
+use Illuminate\Console\View\Components\Factory;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Formatter\OutputFormatter;
+
+// leave it, for Laravel 9.21+
 
 
 class ConsoleSectionOutputTest extends TestCase
@@ -24,8 +26,11 @@ class ConsoleSectionOutputTest extends TestCase
 
         Closure::bind(
             function () use ($output) {
-            $output->output = $output;
-        }, $output, ConsoleSectionOutput::class)();
+                $output->output = $output;
+            },
+            $output,
+            ConsoleSectionOutput::class
+        )();
 
         Closure::bind(function () {
             $this->formatter = new OutputFormatter();
@@ -69,7 +74,7 @@ class ConsoleSectionOutputTest extends TestCase
 
         $output->render(
             function (ConsoleSectionOutput $section) {
-                $section->write('expectedOutput');
+                $section->write('expectedOutput', true);
             }
         );
     }
@@ -82,8 +87,10 @@ class ConsoleSectionOutputTest extends TestCase
             $stream, $array,
             ConsoleOutput::VERBOSITY_NORMAL,
             false, new OutputFormatter(
-            false, []),
-            new ArrayInput([]));
+            false, []
+        ),
+            new ArrayInput([])
+        );
         $console->replace('test');
         $console->replace('test2');
         rewind($stream);
@@ -98,8 +105,10 @@ class ConsoleSectionOutputTest extends TestCase
             $stream, $array,
             ConsoleOutput::VERBOSITY_NORMAL,
             true, new OutputFormatter(
-            true, []),
-            new ArrayInput([]));
+            true, []
+        ),
+            new ArrayInput([])
+        );
         $console->replace('test');
         rewind($stream);
         $this->assertEquals("\e[2Ktest\n\e[0J", stream_get_contents($stream));
@@ -113,8 +122,10 @@ class ConsoleSectionOutputTest extends TestCase
             $stream, $array,
             ConsoleOutput::VERBOSITY_NORMAL,
             true, new OutputFormatter(
-            true, []),
-            new ArrayInput([]));
+            true, []
+        ),
+            new ArrayInput([])
+        );
         $console->replace('test');
         $console->replace('test2');
         rewind($stream);
@@ -185,7 +196,7 @@ class ConsoleSectionOutputTest extends TestCase
      */
     public function testShouldReturnComponentsFactory(): void
     {
-        if(!class_exists('Illuminate\Console\View\Components\Factory')) {
+        if (!class_exists('Illuminate\Console\View\Components\Factory')) {
             $this->markTestSkipped('skipped as it is not available for this version');
         }
 
