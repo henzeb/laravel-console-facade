@@ -61,7 +61,7 @@ jobs:
         run: vendor/bin/phpunit --coverage-clover=coverage.xml
 
       - name: Upload coverage to codeclimate
-        uses: paambaati/codeclimate-action@v3.0.0
+        uses: paambaati/codeclimate-action@v3.1.1
         continue-on-error: true
         env:
           CC_TEST_REPORTER_ID: ${{ env.CC_TOKEN }}
