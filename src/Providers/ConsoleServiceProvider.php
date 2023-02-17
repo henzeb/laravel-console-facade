@@ -4,6 +4,7 @@ namespace Henzeb\Console\Providers;
 
 use Closure;
 use Illuminate\Console\Command;
+use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Console\OutputStyle;
 use Henzeb\Console\Facades\Console;
 use Illuminate\Support\Facades\Event;
@@ -20,8 +21,6 @@ class ConsoleServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->afterResolvingOutputStyle();
-
-        $this->beforeResolvingCommand();
 
         $this->afterResolvingCommand();
 
@@ -42,21 +41,6 @@ class ConsoleServiceProvider extends ServiceProvider
 
                 Console::setOutput($outputStyle);
             }
-        );
-    }
-
-    private function beforeResolvingCommand(): void
-    {
-        $this->app->beforeResolving(
-            Command::class,
-            Closure::bind(
-                function (string $command) {
-                    /** @var $this ConsoleOutput */
-                    $this->setCommandToValidateWith($command);
-                },
-                Console::getFacadeRoot(),
-                ConsoleOutput::class
-            )
         );
     }
 
@@ -87,22 +71,24 @@ class ConsoleServiceProvider extends ServiceProvider
                 );
             }
         );
-
-        $this->app->afterResolving(
-            Command::class,
-            Closure::bind(
-                function () {
-                    /** @var $this ConsoleOutput */
-                    $this->commandToValidateWithDefault();
-                },
-                Console::getFacadeRoot(),
-                ConsoleOutput::class
-            )
-        );
     }
 
     protected function listenToCommandFinished(): void
     {
+        Event::listen(
+            CommandStarting::class,
+            function (CommandStarting $command) {
+
+                Closure::bind(
+                    function (string $command) {
+                        /** @var $this ConsoleOutput */
+                        $this->setCommandToValidateWith($command);
+                    },
+                    Console::getFacadeRoot(),
+                    ConsoleOutput::class
+                )($command->command);
+            });
+
         Event::listen(
             CommandFinished::class,
             function () {
