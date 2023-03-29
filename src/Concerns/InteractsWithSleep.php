@@ -3,12 +3,12 @@
 namespace Henzeb\Console\Concerns;
 
 use Closure;
-use Mockery;
-use RuntimeException;
-use Mockery\Expectation;
-use PHPUnit\Framework\Assert;
-use Mockery\ExpectationInterface;
 use Illuminate\Support\Facades\App;
+use Mockery;
+use Mockery\Expectation;
+use Mockery\ExpectationInterface;
+use PHPUnit\Framework\Assert;
+use RuntimeException;
 
 trait InteractsWithSleep
 {
@@ -28,8 +28,13 @@ trait InteractsWithSleep
 
     public function shouldSleepWith(int $seconds): void
     {
-        $this->setShouldSleep()
-            ->atLeast()
+        $sleep = $this->setShouldSleep();
+
+        if ($seconds === 0) {
+            return;
+        }
+
+        $sleep->atLeast()
             ->once()
             ->andReturnUsing(function ($actual) use ($seconds) {
                 Assert::assertEquals(

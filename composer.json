@@ -23,11 +23,11 @@
     "require": {
         "php": "^8.0",
         "illuminate/support": "^9.0|^10"
-
     },
     "require-dev": {
+        "infection/infection": "^0.26.19",
         "nesbot/carbon": "v2.64.0",
-        "orchestra/testbench": "^7.0|^8.0",
+        "orchestra/testbench": "^7.0|8.0",
         "phpstan/phpstan": "^1.4",
         "phpunit/phpunit": "^9.5.27"
     },
@@ -48,7 +48,10 @@
         "test-dox": "vendor/bin/phpunit --testdox"
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "infection/extension-installer": true
+        }
     },
     "extra": {
         "laravel": {

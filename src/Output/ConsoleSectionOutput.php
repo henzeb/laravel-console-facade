@@ -3,14 +3,14 @@
 namespace Henzeb\Console\Output;
 
 use Closure;
-use Generator;
-use Illuminate\Support\Traits\Macroable;
 use Henzeb\Console\Concerns\InteractsWithIO;
 use Illuminate\Support\Traits\Conditionable;
+use Illuminate\Support\Traits\Macroable;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Formatter\OutputFormatterInterface;
 use Symfony\Component\Console\Output\ConsoleSectionOutput as SymfonyConsoleSectionOutput;
+use Symfony\Component\Console\Output\OutputInterface;
+use const DIRECTORY_SEPARATOR;
 
 class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
 {
@@ -29,22 +29,32 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
     public function __construct(
         $stream,
         array &$sections,
-        int $verbosity,
-        bool $decorated,
-        OutputFormatterInterface $formatter,
-        InputInterface $input
-    ) {
+        OutputInterface $output,
+        InputInterface $input,
+    )
+    {
         $this->input = $input;
         $this->output = $this;
 
-        parent::__construct($stream, $sections, $verbosity, $decorated, $formatter);
+        parent::__construct(
+            $stream,
+            $sections,
+            $output->getVerbosity(),
+            $output->isDecorated(),
+            $output->getFormatter()
+        );
+    }
+
+    public function getInput(): InputInterface
+    {
+        return $this->input;
     }
 
     public function createProgressBar(int $max = 0): ProgressBar
     {
         $progressBar = new ProgressBar($this->output, $max);
 
-        if ('\\' !== \DIRECTORY_SEPARATOR || 'Hyper' === getenv('TERM_PROGRAM')) {
+        if ('\\' !== DIRECTORY_SEPARATOR || 'Hyper' === getenv('TERM_PROGRAM')) {
             $progressBar->setEmptyBarCharacter('░'); // light shade character \u2591
             $progressBar->setProgressCharacter('');
             $progressBar->setBarCharacter('▓'); // dark shade character \u2593
@@ -72,9 +82,8 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
             explode(PHP_EOL, $this->getContent())
         );
 
-        $messages = $this->toGenerator(
-            is_iterable($message) ? $message : explode(PHP_EOL, $message)
-        );
+        $messages = is_iterable($message) ? $message : explode(PHP_EOL, $message);
+
 
         $stream = $this->getStream();
 
@@ -87,15 +96,9 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
         $this->clearContentCache();
 
         //overwriting existing lines
-        while (true) {
-            $message = $messages->current();
-            $messages->next();
+        foreach ($messages as $key => $message) {
             if (!empty($message)) {
-                $this->write(chr(27) . '[2K' . $message, $messages->valid());
-            }
-
-            if (!$messages->valid()) {
-                break;
+                $this->write(chr(27) . '[2K' . $message, isset($messages[$key + 1]));
             }
         }
 
@@ -115,22 +118,13 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
         )();
     }
 
-    private function toGenerator(iterable $iterable): Generator
-    {
-        foreach ($iterable as $key => $value) {
-            yield $key => $value;
-        }
-    }
-
     public function render(callable $message)
     {
         $array = [];
         $streamer = new ConsoleSectionOutput(
             fopen('php://memory', 'rw+'),
             $array,
-            $this->getVerbosity(),
-            $this->isDecorated(),
-            $this->getFormatter(),
+            $this->getOutput(),
             $this->input
         );
 

@@ -2,17 +2,25 @@
 
 namespace Henzeb\Console\Tests\Unit\Console\Concerns;
 
-use RuntimeException;
-use Orchestra\Testbench\TestCase;
-use Illuminate\Support\Facades\App;
 use Henzeb\Console\Output\ConsoleOutput;
-use Illuminate\Support\Traits\Conditionable;
+use Henzeb\Console\Providers\ConsoleServiceProvider;
 use Illuminate\Console\View\Components\Factory;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Traits\Conditionable;
+use Orchestra\Testbench\TestCase;
+use RuntimeException;
 
 class InteractsWithIOTest extends TestCase
 {
     use Conditionable;
+
+    protected function getPackageProviders($app)
+    {
+        return [
+            ConsoleServiceProvider::class
+        ];
+    }
 
     public function providesOldVersions()
     {
@@ -60,7 +68,7 @@ class InteractsWithIOTest extends TestCase
 
         $output = new ConsoleOutput();
 
-        if(!class_exists('Illuminate\Console\View\Components\Factory')) {
+        if (!class_exists('Illuminate\Console\View\Components\Factory')) {
             $this->expectException(BindingResolutionException::class);
             $output->components();
         } else {

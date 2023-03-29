@@ -3,10 +3,10 @@
 namespace Henzeb\Console\Tests\Unit\Console\Concerns;
 
 
-
-use Orchestra\Testbench\TestCase;
-use Illuminate\Console\OutputStyle;
 use Henzeb\Console\Output\ConsoleOutput;
+use Henzeb\Console\Providers\ConsoleServiceProvider;
+use Illuminate\Console\OutputStyle;
+use Orchestra\Testbench\TestCase;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputDefinition;
@@ -14,9 +14,15 @@ use Symfony\Component\Console\Output\ConsoleOutput as SymfonyConsoleOutput;
 
 class InteractsWithArgumentsTest extends TestCase
 {
+    protected function getPackageProviders($app)
+    {
+        return [
+            ConsoleServiceProvider::class
+        ];
+    }
+
     public function testShouldMergeArguments(): void
     {
-
         $output = new ConsoleOutput();
         $inputDefinition = new InputDefinition();
         $output->getInput()->bind(

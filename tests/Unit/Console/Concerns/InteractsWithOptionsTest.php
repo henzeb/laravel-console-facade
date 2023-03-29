@@ -3,16 +3,24 @@
 namespace Henzeb\Console\Tests\Unit\Console\Concerns;
 
 
-use Orchestra\Testbench\TestCase;
-use Illuminate\Console\OutputStyle;
 use Henzeb\Console\Output\ConsoleOutput;
+use Henzeb\Console\Providers\ConsoleServiceProvider;
+use Illuminate\Console\OutputStyle;
+use Orchestra\Testbench\TestCase;
 use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputDefinition;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\ConsoleOutput as SymfonyConsoleOutput;
 
 class InteractsWithOptionsTest extends TestCase
 {
+    protected function getPackageProviders($app)
+    {
+        return [
+            ConsoleServiceProvider::class
+        ];
+    }
+
     public function testShouldMergeOptions(): void
     {
         $output = new ConsoleOutput();

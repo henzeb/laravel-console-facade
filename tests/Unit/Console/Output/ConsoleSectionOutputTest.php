@@ -3,22 +3,38 @@
 namespace Henzeb\Console\Tests\Unit\Console\Output;
 
 
-use Mockery;
 use Closure;
-use Orchestra\Testbench\TestCase;
-use Symfony\Component\Console\Output\Output;
 use Henzeb\Console\Output\ConsoleSectionOutput;
-use Symfony\Component\Console\Input\ArrayInput;
+use Henzeb\Console\Providers\ConsoleServiceProvider;
 use Illuminate\Console\View\Components\Factory;
-use Symfony\Component\Console\Output\ConsoleOutput;
-use Symfony\Component\Console\Output\OutputInterface;
+use Mockery;
+use Orchestra\Testbench\TestCase;
 use Symfony\Component\Console\Formatter\OutputFormatter;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Console\Output\Output;
+use Symfony\Component\Console\Output\OutputInterface;
 
 // leave it, for Laravel 9.21+
 
 
 class ConsoleSectionOutputTest extends TestCase
 {
+    protected function getPackageProviders($app)
+    {
+        return [
+            ConsoleServiceProvider::class
+        ];
+    }
+
+    public function testShouldGetCorrectInput(): void
+    {
+        $output = new \Henzeb\Console\Output\ConsoleOutput();
+        $section = $output->section('test');
+
+        $this->assertSame($output->getInput(), $section->getInput());
+    }
+
     public function testShouldReturnProgressBar(): void
     {
         $output = Mockery::mock(ConsoleSectionOutput::class)->makePartial();
@@ -66,6 +82,10 @@ class ConsoleSectionOutputTest extends TestCase
             $this->input = new ArrayInput([]);
         }, $output, ConsoleSectionOutput::class)();
 
+        Closure::bind(function () {
+            $this->output = $this;
+        }, $output, ConsoleSectionOutput::class)();
+
 
         $output->setVerbosity(ConsoleOutput::VERBOSITY_NORMAL);
 
@@ -85,10 +105,7 @@ class ConsoleSectionOutputTest extends TestCase
         $array = [];
         $console = new ConsoleSectionOutput(
             $stream, $array,
-            ConsoleOutput::VERBOSITY_NORMAL,
-            false, new OutputFormatter(
-            false, []
-        ),
+            new ConsoleOutput(decorated: false),
             new ArrayInput([])
         );
         $console->replace('test');
@@ -103,10 +120,7 @@ class ConsoleSectionOutputTest extends TestCase
         $array = [];
         $console = new ConsoleSectionOutput(
             $stream, $array,
-            ConsoleOutput::VERBOSITY_NORMAL,
-            true, new OutputFormatter(
-            true, []
-        ),
+            new ConsoleOutput(decorated: true),
             new ArrayInput([])
         );
         $console->replace('test');
@@ -117,13 +131,12 @@ class ConsoleSectionOutputTest extends TestCase
     public function testShouldReplace(): void
     {
         $stream = fopen('php://memory', 'rw+');
+
         $array = [];
         $console = new ConsoleSectionOutput(
-            $stream, $array,
-            ConsoleOutput::VERBOSITY_NORMAL,
-            true, new OutputFormatter(
-            true, []
-        ),
+            $stream,
+            $array,
+            new ConsoleOutput(decorated: true),
             new ArrayInput([])
         );
         $console->replace('test');

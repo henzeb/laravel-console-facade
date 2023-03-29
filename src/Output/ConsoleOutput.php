@@ -4,30 +4,24 @@ namespace Henzeb\Console\Output;
 
 
 use Closure;
-use RuntimeException;
-use Illuminate\Console\OutputStyle;
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\Traits\Macroable;
-use Henzeb\Console\Concerns\ValidatesInput;
-use Henzeb\Console\Concerns\InteractsWithIO;
-use Illuminate\Support\Traits\Conditionable;
-use Henzeb\Console\Concerns\InteractsWithExit;
-use Symfony\Component\Console\Input\ArgvInput;
-use Symfony\Component\Console\Input\ArrayInput;
-use Henzeb\Console\Concerns\InteractsWithSleep;
-use Symfony\Component\Console\Style\SymfonyStyle;
-use Henzeb\Console\Concerns\InteractsWithSignals;
-use Henzeb\Console\Concerns\InteractsWithOptions;
-use Henzeb\Console\Concerns\InteractsWithCommand;
-use Symfony\Component\Console\Input\InputInterface;
 use Henzeb\Console\Concerns\InteractsWithArguments;
+use Henzeb\Console\Concerns\InteractsWithCommand;
+use Henzeb\Console\Concerns\InteractsWithExit;
 use Henzeb\Console\Concerns\InteractsWithInfiniteLoop;
-use Symfony\Component\Console\Output\ConsoleOutput as SymfonyConsoleOutput;
+use Henzeb\Console\Concerns\InteractsWithIO;
+use Henzeb\Console\Concerns\InteractsWithOptions;
+use Henzeb\Console\Concerns\InteractsWithSignals;
+use Henzeb\Console\Concerns\InteractsWithSleep;
+use Henzeb\Console\Concerns\ValidatesInput;
+use Illuminate\Console\OutputStyle;
+use Illuminate\Support\Traits\Conditionable;
+use Illuminate\Support\Traits\Macroable;
+use RuntimeException;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 class ConsoleOutput
 {
-    private array $sections = [];
-
     use
         Macroable,
         Conditionable,
@@ -41,13 +35,12 @@ class ConsoleOutput
         InteractsWithArguments,
         InteractsWithInfiniteLoop;
 
+    private array $sections = [];
+
     public function __construct()
     {
         $this->setOutput(
-            new OutputStyle(
-                App::runningUnitTests() ? new ArrayInput([]) : new ArgvInput(),
-                new SymfonyConsoleOutput()
-            )
+            resolve('henzeb.outputstyle')
         );
     }
 
@@ -81,11 +74,16 @@ class ConsoleOutput
 
     public function watch(
         callable $render,
-        int $refreshRate = 2,
-        string $sectionName = null
-    ): void {
+        int      $refreshRate = 2,
+        string   $sectionName = null
+    ): void
+    {
         if ($refreshRate <= 0) {
             throw new RuntimeException('The refresh rate for watch cannot be lower than 1');
+        }
+
+        if ($this->getCurrentVerbosity() > $this->getOutput()->getVerbosity()) {
+            return;
         }
 
         $sectionName = $sectionName ?? uniqid();
@@ -107,10 +105,8 @@ class ConsoleOutput
         return $this->sections[$name] = new ConsoleSectionOutput(
             $this->getOutput()->getOutput()->getStream(),
             $this->sections,
-            $this->output->getVerbosity(),
-            $this->output->isDecorated(),
-            $this->output->getFormatter(),
-            $this->getInput(),
+            $this->getOutput(),
+            $this->getInput()
         );
     }
 }

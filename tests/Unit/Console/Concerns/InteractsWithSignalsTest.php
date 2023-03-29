@@ -3,16 +3,22 @@
 namespace Henzeb\Console\Tests\Unit\Console\Concerns;
 
 use Closure;
-
-use Mockery;
-use Orchestra\Testbench\TestCase;
-use Illuminate\Console\OutputStyle;
 use Henzeb\Console\Output\ConsoleOutput;
+use Henzeb\Console\Providers\ConsoleServiceProvider;
+use Illuminate\Console\OutputStyle;
+use Orchestra\Testbench\TestCase;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\ConsoleOutput as SymfonyConsoleOutput;
 
 class InteractsWithSignalsTest extends TestCase
 {
+    protected function getPackageProviders($app)
+    {
+        return [
+            ConsoleServiceProvider::class
+        ];
+    }
+
     private function mockExit(ConsoleOutput $output, callable $callback = null): void
     {
         Closure::bind(function () use ($callback) {

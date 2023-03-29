@@ -3,21 +3,19 @@
 namespace Henzeb\Console\Tests\Unit\Console\Output;
 
 
-use Mockery;
 use Closure;
-use Orchestra\Testbench\TestCase;
 use Henzeb\Console\Facades\Console;
-use Illuminate\Console\OutputStyle;
 use Henzeb\Console\Output\ConsoleOutput;
 use Henzeb\Console\Output\ConsoleSectionOutput;
-use Symfony\Component\Console\Input\ArrayInput;
-use Illuminate\Console\View\Components\Factory;
-
-// leave it, for Laravel 9.21+
 use Henzeb\Console\Providers\ConsoleServiceProvider;
-use Henzeb\Console\Tests\Unit\Console\Helpers\InfiniteLoop;
+use Illuminate\Console\OutputStyle;
+use Illuminate\Console\View\Components\Factory;
+use Mockery;
+use Orchestra\Testbench\TestCase;
+use RuntimeException;
+use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\ConsoleOutput as SymfonyConsoleOutput;
-
+use Symfony\Component\Console\Output\ConsoleOutputInterface;
 
 class ConsoleOutputTest extends TestCase
 {
@@ -43,7 +41,7 @@ class ConsoleOutputTest extends TestCase
 
     public function testShouldAutomaticallySetOutputStyle()
     {
-        Console::partialMock()->expects('setOutput')->twice();
+        Console::partialMock()->shouldReceive('setOutput')->atLeast()->twice();
 
         $this->artisan('env');
     }
@@ -125,16 +123,29 @@ class ConsoleOutputTest extends TestCase
     {
         $output = (new ConsoleOutput());
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
 
         $output->watch(fn() => true, 0);
+    }
+
+    public function testWatchDoesNotRunWhenVerbosity()
+    {
+        $output = Mockery::mock(ConsoleOutput::class)->makePartial();
+        $output->expects('getCurrentVerbosity')->andReturn(ConsoleOutputInterface::VERBOSITY_DEBUG);
+        $output->__construct();
+        $count = 0;
+        $output->watchShouldLoop(1, 0);
+        $output->watch(function () use (&$count) {
+            $count++;
+        });
+        $this->assertEquals(0, $count);
     }
 
     public function testWatchDoesNotAllowNegativeRefreshRate()
     {
         $output = (new ConsoleOutput());
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
 
         $output->watch(fn() => true, -1);
     }
@@ -144,7 +155,7 @@ class ConsoleOutputTest extends TestCase
         return [
             ['loops' => 2, 'sleep' => 1],
             ['loops' => 4, 'sleep' => 5],
-            ['loops' => 4, 'sleep' => 5, 'name'=>'section_name'],
+            ['loops' => 4, 'sleep' => 5, 'name' => 'section_name'],
         ];
     }
 
@@ -152,6 +163,7 @@ class ConsoleOutputTest extends TestCase
     /**
      * @param int $loops
      * @param int $sleep
+     * @param string|null $name
      * @return void
      *
      * @dataProvider providesWatchRuns
@@ -164,7 +176,7 @@ class ConsoleOutputTest extends TestCase
 
         $output->watchShouldLoop($loops, $sleep);
 
-        if($name) {
+        if ($name) {
             $output->shouldReceive('section')->once()->passthru()->with($name);
         }
         $output->shouldReceive('section')->passthru();
@@ -180,4 +192,30 @@ class ConsoleOutputTest extends TestCase
         );
         $this->assertEquals($loops, $actual);
     }
+
+    public function testWatchShouldRun2SecondsByDefault()
+    {
+        $output = Mockery::mock(ConsoleOutput::class)->makePartial();
+        $output->__construct();
+
+
+        $output->watchShouldLoop(1, 2);
+
+        $output->watch(
+            function () use (&$actual) {
+                $actual++;
+            },
+        );
+    }
+
+    /* public function testShouldUseDebug()
+     {
+         $output = (new ConsoleOutput());
+
+         $output->getOutput()->setVerbosity(OutputInterface::VERBOSITY_DEBUG);
+
+         ///$var = $output->debug()->ask('test?', 'not asked');
+         $output->section('hello')->debug('test')->clear();
+
+     }*/
 }

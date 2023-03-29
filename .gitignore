@@ -5,6 +5,7 @@
 build
 composer.lock
 coverage
+infection.html
 phpstan.neon
 testbench.yaml
 vendor

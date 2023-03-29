@@ -1,4 +1,5 @@
 # Console Output
+
 [![Build Status](https://github.com/henzeb/laravel-console-facade/workflows/tests/badge.svg)](https://github.com/henzeb/laravel-console-facade/actions)
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/henzeb/laravel-console-facade.svg?style=flat-square)](https://packagist.org/packages/henzeb/laravel-console-facade)
 [![Total Downloads](https://img.shields.io/packagist/dt/henzeb/laravel-console-facade.svg?style=flat-square)](https://packagist.org/packages/henzeb/laravel-console-facade)
@@ -307,6 +308,7 @@ Console::argumentGiven('verify');   //returns true
 ```
 
 ## Validation
+
 Whether you build a console application that is going to be distributed, or
 just want to make sure no one can derail your application, you want to use
 validation. Laravel Console Facade makes that very easy to do.
@@ -332,15 +334,16 @@ Console::validateWith(
 
 When running your command, the validation will automatically execute.
 
-Under the hood, this uses Laravel's validation engine, so everything that 
-the validation engine accepts, you can use here. 
+Under the hood, this uses Laravel's validation engine, so everything that
+the validation engine accepts, you can use here.
 
-Caveat: When you want to validate options against arguments or options that 
+Caveat: When you want to validate options against arguments or options that
 may not be passed, you may need to write your own `Rule` or closure.
 
 ### Messages
-Since the translations are mainly based upon input coming from HTTP requests, 
-you may want to give them different translations. Just add a second array 
+
+Since the translations are mainly based upon input coming from HTTP requests,
+you may want to give them different translations. Just add a second array
 like you would do with Laravel's validation engine:
 
 ````php
@@ -360,6 +363,7 @@ Console::validateWith(
 ````
 
 ### Closure based commands
+
 When running `ClosureCommands` defined with `Artisan::command()` it does not
 validate automatically. Instead, you can do the following:
 
@@ -381,7 +385,104 @@ Artisan::command(
 );
 ````
 
-### macros
+## Verbosity
+
+Console gives you an easy-to-use interface for handling verbosity insid your application.
+
+````php
+Console::verbose('verbose'); // only prints `verbose` when -v or higher is passed.
+Console::veryVerbose('very verbose'); // only prints `very verbose` when -vv or higher is passed.
+Console::debug('debug'); // only prints `debug` when -vvv is passed.
+````
+
+These methods are using the following styles for coloring, which you can override if you wish.
+
+| Style                       | Color   |
+|-----------------------------|---------|
+| henzeb.console.verbose      | cyan    |
+| henzeb.console.very.verbose | yellow  |
+| henzeb.console.debug        | magenta |
+
+## Advanced Verbosity
+
+Next to simple lines, Console also allows you to use any available output methods.
+
+````php
+Console::verbose()->info('info'); // only prints `info` when -v or higher is passed.
+
+Console::debug()->ask('debug?'); // only asks when -vvv is passed, returns null otherwise
+
+Console::veryVerbose()->ask('very verbose?', 'no'); // only asks when -vv or higher is passed, returns 'no' otherwise
+
+Console::verbose()->withProgressbar(2, fn() => true); // only shows the progressbar when -v or higher is passed
+````
+
+Note: While the progressbar is not shown due to verbosity, the given callable is still executed.
+Also note that the [watch](#watch) will not run at all when the verbosity does not match.
+
+### Verbosity and sections
+
+The verbosity interface is also supported with sections.
+
+````php
+Console::section('mySection')->debug('debug'); // only prints `debug` when -vvv is passed.
+Console::section('mySection')->debug()->info('info');// only prints `info` when -vvv is passed.
+
+Console::debug()->section('mySection')->info('info');// only prints `info` when -vvv is passed.
+````
+
+Note: be aware that verbose sections are the same as the non-verbose section. This means you can't
+just `clear` the verbose output inside a section as it will clear the entire section.
+
+### silence
+
+Silence is a handy way to hide elements like progressbars based on a
+boolean.
+
+````php
+Console::silence(false)->info('test'); // prints test
+Console::silence(true)->info('test'); // prints nothing
+Console::silence(false)->debug('test'); // prints test when -vvv is passed.
+Console::silence(true)->debug('test'); // prints nothing, even when -vvv is passed.
+
+Console::section('section')->silence(true)->info('test'); // prints nothing
+Console::section('section')->silence(false)->info('test'); // prints test
+
+Console::silence(true)->withProgressBar(5, fn()=>true); // runs the callback, but won't show progress
+Console::silence(false)->withProgressBar(5, fn()=>true); // runs the callback, and shows progress
+````
+
+You can even chain silence so output will only be shown when a combination of
+parameters is given:
+
+````php
+Console::silence(false)->silence(false); // shows output
+Console::silence(true)->silence(false); // shows no output
+Console::silence(false)->silence(true); // shows no output
+Console::silence(true)->silence(true); // shows no output
+````
+
+### unsilence
+
+Unsilence is the direct opposite of `silence`.
+
+````php
+Console::unsilence(true)->info('test'); // prints test
+Console::unsilence(false)->info('test'); // prints nothing
+Console::unsilence(true)->debug('test'); // prints test when -vvv is passed.
+Console::unsilence(false)->debug('test'); // prints nothing, even when -vvv is passed.
+
+Console::section('section')->unsilence(false)->info('test'); // prints nothing
+Console::section('section')->unsilence(true)->info('test'); // prints test
+
+Console::unsilence(false)->withProgressBar(5, fn()=>true); // runs the callback, but won't show progress
+Console::unsilence(true)->withProgressBar(5, fn()=>true); // runs the callback, and shows progress
+````
+
+Note: Whatever you can do with `silence`, you can do with `unsilence`.
+You can even mix them up in chaining commands.
+
+## Macros
 
 The Console facade and `Henzeb\Console\Output\ConsoleSectionOutput` are
 Macroable using Laravel's Macroable trait.
@@ -393,7 +494,7 @@ Henzeb\Console\Output\ConsoleSectionOutput::macro(...)
 
 See [documentation](https://laravel.com/api/master/Illuminate/Support/Traits/Macroable.html)
 
-### conditions
+## Conditions
 
 You can use `when` and `unless` just like you are used to on the facade as
 well as inside sections.

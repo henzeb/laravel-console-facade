@@ -2,17 +2,25 @@
 
 namespace Henzeb\Console\Tests\Unit\Console\Concerns;
 
-use Mockery;
-use Orchestra\Testbench\TestCase;
-use Illuminate\Support\Facades\App;
-use RuntimeException;
 use Henzeb\Console\Output\ConsoleOutput;
+use Henzeb\Console\Providers\ConsoleServiceProvider;
+use Illuminate\Support\Facades\App;
+use Mockery;
 use Mockery\Exception\InvalidCountException;
+use Orchestra\Testbench\TestCase;
 use PHPUnit\Framework\ExpectationFailedException;
+use RuntimeException;
 
 
 class InteractsWithSleepTest extends TestCase
 {
+    protected function getPackageProviders($app)
+    {
+        return [
+            ConsoleServiceProvider::class
+        ];
+    }
+
     public function providesMethods(): array
     {
         return [

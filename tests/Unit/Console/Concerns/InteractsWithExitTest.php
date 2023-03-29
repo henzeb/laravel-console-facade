@@ -2,14 +2,22 @@
 
 namespace Henzeb\Console\Tests\Unit\Console\Concerns;
 
-use RuntimeException;
-use Orchestra\Testbench\TestCase;
-use Illuminate\Support\Facades\App;
 use Henzeb\Console\Output\ConsoleOutput;
+use Henzeb\Console\Providers\ConsoleServiceProvider;
+use Illuminate\Support\Facades\App;
+use Orchestra\Testbench\TestCase;
+use RuntimeException;
 
 
 class InteractsWithExitTest extends TestCase
 {
+    protected function getPackageProviders($app)
+    {
+        return [
+            ConsoleServiceProvider::class
+        ];
+    }
+
     public function providesMethods(): array
     {
         return [
