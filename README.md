@@ -40,6 +40,20 @@ class MyClass {
 }
 ```
 
+### console helper
+
+Instead of using the Console facade, you can also use the `console`
+helper method.
+
+````php
+console('hello'); // outputs hello
+console()->info('hello'); // outputs hello
+console()->ask('Want an answer?'); // asks you a question
+````
+
+Note: Troughout the documentation the facade is used, but everything can be
+accessed with the helper method as well.
+
 ### Laravel's components factory
 
 Laravel released a new style for their commands, and they use a special Factory
@@ -159,6 +173,30 @@ Console::watch(
     sectionName: 'yourName'
 );
 ```
+
+### tail
+
+`tail` can be used to 'scroll' through added lines. Just like the
+linux command, `tail` shows you the last `n` lines.
+
+````php
+Console::tail(); // returns a scrollable section with 10 lines
+Console::tail(5); // returns a scrollable section with 5 lines
+Console::tail(10, 'mySection'); // returns a scrollable mySection section
+
+Console::section('mySection')->tail(10); 
+Console::section('mySection')->tail(10)->tail(5);//downgrades height to 5
+
+Console::section('mySection')->setMaxHeight(10); // uses Symfony's implementation
+Console::tail()->setMaxHeight(15); // upgrades height to 15
+````
+
+Inside Symfony's ConsoleSectionOutput, there is already a way of
+doing this, but there are numerous issues with. This implementation fixes
+them, and allows you to use any output, like progress bars and tables 
+with ease.
+
+You can still use Symfony's implementation on regular sections.
 
 ### exit
 

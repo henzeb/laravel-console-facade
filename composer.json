@@ -27,11 +27,14 @@
     "require-dev": {
         "infection/infection": "^0.26.19",
         "nesbot/carbon": "v2.64.0",
-        "orchestra/testbench": "^7.0|8.0",
+        "orchestra/testbench": "^v7.0.0|8.0",
         "phpstan/phpstan": "^1.4",
-        "phpunit/phpunit": "^9.5.27"
+        "phpunit/phpunit": "^9.6.6"
     },
     "autoload": {
+        "files": [
+            "src/Functions/Functions.php"
+        ],
         "psr-4": {
             "Henzeb\\Console\\": "src/"
         }

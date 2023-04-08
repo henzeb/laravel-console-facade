@@ -63,9 +63,15 @@ class ConsoleOutput
         )();
     }
 
+    public function withProgressBar($totalSteps, Closure $callback)
+    {
+        return $this->section(uniqid())->withProgressBar($totalSteps, $callback);
+    }
+
     public function section(string $name, callable $render = null): ConsoleSectionOutput
     {
         $section = $this->getSection($name);
+        $section->setInput($this->getInput());
         if ($render) {
             $section->render($render);
         }
@@ -94,6 +100,11 @@ class ConsoleOutput
 
             $this->sleep($refreshRate);
         }
+    }
+
+    public function tail(int $maxHeight = 10, string $sectionName = null): TailConsoleSectionOutput
+    {
+        return $this->section($sectionName ?? uniqid())->tail($maxHeight);
     }
 
     private function getSection(string $name): ConsoleSectionOutput

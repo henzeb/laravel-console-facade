@@ -4,16 +4,23 @@ namespace Henzeb\Console\Tests\Unit\Console\Output;
 
 
 use Closure;
+use Henzeb\Console\Facades\Console;
 use Henzeb\Console\Output\ConsoleSectionOutput;
+use Henzeb\Console\Output\TailConsoleSectionOutput;
 use Henzeb\Console\Providers\ConsoleServiceProvider;
+use Illuminate\Console\BufferedConsoleOutput;
+use Illuminate\Console\OutputStyle;
 use Illuminate\Console\View\Components\Factory;
 use Mockery;
 use Orchestra\Testbench\TestCase;
+use ReflectionClass;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\Output;
 use Symfony\Component\Console\Output\OutputInterface;
+use ValueError;
 
 // leave it, for Laravel 9.21+
 
@@ -37,12 +44,14 @@ class ConsoleSectionOutputTest extends TestCase
 
     public function testShouldReturnProgressBar(): void
     {
-        $output = Mockery::mock(ConsoleSectionOutput::class)->makePartial();
-        $output->expects('getVerbosity')->times(5)->andReturn(1);
+        $output = Mockery::mock(ConsoleSectionOutput::class);
+        $output->expects('getVerbosity')->times(6)->andReturn(1);
+        $output = $output->makePartial();
 
         Closure::bind(
             function () use ($output) {
                 $output->output = $output;
+                $output->input = new StringInput('');
             },
             $output,
             ConsoleSectionOutput::class
@@ -233,5 +242,79 @@ class ConsoleSectionOutputTest extends TestCase
         }, $resolved, Factory::class)();
 
         $this->assertTrue($expectedOutput === $actualOutput);
+    }
+
+    public function testShouldDelete()
+    {
+        $reflector = new ReflectionClass(ConsoleSectionOutput::class);
+        $rewindMethod = $reflector->getMethod('delete');
+
+        if (!$rewindMethod->isPublic()) {
+            $this->fail('The visibility of rewind method is not public');
+        }
+
+        $section = $this->mock(ConsoleSectionOutput::class);
+        $section->expects('clear')->with(null)->once();
+        $section->expects('clear')->with(1)->once();
+        $section = $section->makePartial();
+        $this->assertSame($section, $section->delete());
+
+        $section->delete(1);
+    }
+
+    public function testNewLine(): void
+    {
+        $buffer = new class extends BufferedConsoleOutput {
+            private $stream = null;
+
+            public function getStream()
+            {
+                return $this->stream ??= fopen('php://memory', 'rw+');
+            }
+
+            public function isDecorated(): bool
+            {
+                return true;
+            }
+
+            public function fetch()
+            {
+                rewind($this->getStream());
+                $content = stream_get_contents($this->getStream());
+                ftruncate($this->getStream(), 0);
+                return $content;
+            }
+        };
+
+        Console::setOutput(new OutputStyle(Console::getInput(), $buffer));
+        $section = Console::section('test');
+
+        $section->newLine();
+
+        $this->assertEquals(PHP_EOL, $buffer->fetch());
+
+        $section->newLine(2);
+        $this->assertEquals(PHP_EOL . PHP_EOL, $buffer->fetch());
+
+        $this->expectException(ValueError::class);
+        $section->newLine(0);
+    }
+
+    public function testReturnTail()
+    {
+        $console = (new \Henzeb\Console\Output\ConsoleOutput())->section('test');
+
+        $this->assertSame(
+            $console->tail(1),
+            $console->tail(2)
+        );
+        $tail = $console->tail();
+
+        $this->assertInstanceOf(TailConsoleSectionOutput::class, $tail);
+
+        $this->assertEquals(10, $tail->getMaxHeight());
+
+        $tail = $console->tail(2);
+        $this->assertEquals(2, $tail->getMaxHeight());
     }
 }

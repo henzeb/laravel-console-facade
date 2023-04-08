@@ -4,13 +4,13 @@ namespace Henzeb\Console\Output;
 
 use Closure;
 use Henzeb\Console\Concerns\InteractsWithIO;
+use Illuminate\Console\OutputStyle;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleSectionOutput as SymfonyConsoleSectionOutput;
 use Symfony\Component\Console\Output\OutputInterface;
-use const DIRECTORY_SEPARATOR;
 
 class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
 {
@@ -24,7 +24,11 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
         confirm as private;
         question as private;
         secret as private;
+        InteractsWithIO::withProgressBar as private parentWithProgressbar;
     }
+
+    protected array $sections = [];
+    private ?TailConsoleSectionOutput $tail = null;
 
     public function __construct(
         $stream,
@@ -38,7 +42,7 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
 
         parent::__construct(
             $stream,
-            $sections,
+            $this->sections = &$sections,
             $output->getVerbosity(),
             $output->isDecorated(),
             $output->getFormatter()
@@ -50,17 +54,28 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
         return $this->input;
     }
 
+    protected function contentEndsWithNewLine(): bool
+    {
+        return str_ends_with($this->getContent(), PHP_EOL);
+    }
+
     public function createProgressBar(int $max = 0): ProgressBar
     {
-        $progressBar = new ProgressBar($this->output, $max);
+        return (new OutputStyle(self::getInput(), $this->output))
+            ->createProgressBar($max);
+    }
 
-        if ('\\' !== DIRECTORY_SEPARATOR || 'Hyper' === getenv('TERM_PROGRAM')) {
-            $progressBar->setEmptyBarCharacter('░'); // light shade character \u2591
-            $progressBar->setProgressCharacter('');
-            $progressBar->setBarCharacter('▓'); // dark shade character \u2593
-        }
-
-        return $progressBar;
+    public function withProgressBar($totalSteps, Closure $callback)
+    {
+        return tap($this->parentWithProgressbar($totalSteps, $callback),
+            function () {
+                if (!$this->contentEndsWithNewLine()) {
+                    (function () {
+                        $this->content[] = PHP_EOL;
+                    })->bindTo($this, SymfonyConsoleSectionOutput::class)();
+                }
+            }
+        );
     }
 
     public function setVerbosity(int $level)
@@ -68,11 +83,7 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
         parent::setVerbosity($level);
     }
 
-    /**
-     * @param $message iterable|string
-     * @return void
-     */
-    public function replace($message)
+    public function replace(iterable|string $message): void
     {
         if (!$this->isDecorated()) {
             return;
@@ -106,6 +117,14 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
         fwrite($stream, "\x1b[0J");
     }
 
+    public function tail(int $maxHeight = 10): TailConsoleSectionOutput
+    {
+        return ($this->tail ??= new TailConsoleSectionOutput(
+            $maxHeight,
+            $this->output
+        ))->tail($maxHeight);
+    }
+
     private function clearContentCache(): void
     {
         Closure::bind(
@@ -131,5 +150,17 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
         Closure::fromCallable($message)($streamer);
 
         $this->replace($streamer->getContent());
+    }
+
+    public function delete(int $lines = null): self
+    {
+        $this->clear($lines);
+
+        return $this;
+    }
+
+    public function newLine($count = 1)
+    {
+        $this->write(str_repeat(PHP_EOL, $count - 1));
     }
 }

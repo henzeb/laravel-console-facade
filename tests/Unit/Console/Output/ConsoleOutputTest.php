@@ -7,6 +7,7 @@ use Closure;
 use Henzeb\Console\Facades\Console;
 use Henzeb\Console\Output\ConsoleOutput;
 use Henzeb\Console\Output\ConsoleSectionOutput;
+use Henzeb\Console\Output\TailConsoleSectionOutput;
 use Henzeb\Console\Providers\ConsoleServiceProvider;
 use Illuminate\Console\OutputStyle;
 use Illuminate\Console\View\Components\Factory;
@@ -208,14 +209,37 @@ class ConsoleOutputTest extends TestCase
         );
     }
 
-    /* public function testShouldUseDebug()
-     {
-         $output = (new ConsoleOutput());
+    public function testWithProgressbar()
+    {
+        $actual = fn() => true;
+        $output = $this->mock(ConsoleOutput::class);
+        $section = $this->mock(ConsoleSectionOutput::class);
+        $section->expects('withProgressbar')->with(1, $actual)->andReturn(1);
 
-         $output->getOutput()->setVerbosity(OutputInterface::VERBOSITY_DEBUG);
+        $output->expects('section')->andReturn($section);
 
-         ///$var = $output->debug()->ask('test?', 'not asked');
-         $output->section('hello')->debug('test')->clear();
+        $output = $output->makePartial();
+        $this->assertEquals(1, $output->withProgressbar(1, $actual));
+    }
 
-     }*/
+    public function testReturnTail()
+    {
+        $console = new ConsoleOutput();
+        $this->assertNotSame($console->tail(1), $console->tail(1));
+
+        $this->assertEquals(10, $console->tail()->getMaxHeight());
+
+        $this->assertSame(
+            $console->tail(1, 'test'),
+            $console->tail(2, 'test')
+        );
+        $tail = $console->tail(1, 'test');
+
+        $this->assertInstanceOf(TailConsoleSectionOutput::class, $tail);
+
+        $this->assertEquals(1, $tail->getMaxHeight());
+
+        $tail = $console->tail(2, 'test');
+        $this->assertEquals(2, $tail->getMaxHeight());
+    }
 }

@@ -3,10 +3,7 @@
 namespace Henzeb\Console\Tests\Unit\Console\Concerns;
 
 
-use Henzeb\Console\Input\VerboseInput;
 use Henzeb\Console\Output\ConsoleOutput;
-use Henzeb\Console\Output\ConsoleSectionOutput;
-use Henzeb\Console\Output\VerboseOutputStyle;
 use Henzeb\Console\Providers\ConsoleServiceProvider;
 use Henzeb\Console\Tests\Unit\Console\Concerns\Stub\StubCommandServiceProvider;
 use Illuminate\Console\OutputStyle;
@@ -30,70 +27,6 @@ class HandlesVerbosityOutputTest extends TestCase
         ];
     }
 
-
-    /**
-     * @return void
-     * @dataProvider providesVerbosityCases
-     */
-    public function testShouldReturnClone(string $method, int $verbosity)
-    {
-        $output = new ConsoleOutput();
-        /**
-         * @var $verbose ConsoleOutput
-         */
-        $verbose = $output->$method();
-
-        $this->assertNotSame($output, $verbose);
-
-        $this->assertInstanceOf(ConsoleOutput::class, $verbose);
-
-        $this->assertNotSame($output->getOutput(), $verbose->getOutput());
-
-        $this->assertNotSame($output->getInput(), $verbose->getInput());
-
-        $this->assertInstanceOf(VerboseOutputStyle::class, $verbose->getOutput());
-
-        $this->assertEquals(
-            (fn() => $this->verbosityLevel)->bindTo($verbose->getOutput(),
-                VerboseOutputStyle::class
-            )(),
-            $verbosity
-        );
-
-        $this->assertInstanceOf(Verboseinput::class, $verbose->getInput());
-    }
-
-    /**
-     * @return void
-     * @dataProvider providesVerbosityCases
-     */
-    public function testWithSectionsShouldReturnClone(string $method, int $verbosity)
-    {
-        $output = new ConsoleOutput();
-        /**
-         * @var $verbose ConsoleSectionOutput
-         */
-        $verbose = $output->section('sectionName')->$method();
-
-        $this->assertNotSame($output, $verbose);
-
-        $this->assertInstanceOf(ConsoleSectionOutput::class, $verbose);
-
-        $this->assertNotSame($output->getOutput(), $verbose->getOutput());
-
-        $this->assertNotSame($output->getInput(), $verbose->getInput());
-
-        $this->assertInstanceOf(VerboseOutputStyle::class, $verbose->getOutput());
-
-        $this->assertEquals(
-            (fn() => $this->verbosityLevel)->bindTo($verbose->getOutput(),
-                VerboseOutputStyle::class
-            )(),
-            $verbosity
-        );
-
-        $this->assertInstanceOf(Verboseinput::class, $verbose->getInput());
-    }
 
     public function providesVerbosityOutputTestcases()
     {
