@@ -4,13 +4,13 @@ namespace Henzeb\Console\Providers;
 
 use Closure;
 use Henzeb\Console\Facades\Console;
-use Henzeb\Console\Output\ConsoleOutput;
 use Henzeb\Console\Stores\OutputStore;
 use Illuminate\Console\Command;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Console\OutputStyle;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
@@ -30,25 +30,13 @@ class ConsoleServiceProvider extends ServiceProvider
                 App::runningUnitTests() ? new ArrayInput([]) : new ArgvInput(),
                 new SymfonyConsoleOutput()
             );
-            /*return resolve(
-                OutputStyle::class,
-                [
-                    'input' => App::runningUnitTests() ? new ArrayInput([]) : new ArgvInput(),
-                    'output' => new SymfonyConsoleOutput()
-                ]
-            );*/
         });
 
         $this->afterResolvingOutputStyle();
 
         $this->afterResolvingCommand();
 
-        $this->listenToCommandFinished();
-    }
-
-    public function register()
-    {
-
+        $this->listenToCommandEvents();
     }
 
     /**
@@ -76,16 +64,22 @@ class ConsoleServiceProvider extends ServiceProvider
 
     private function afterResolvingCommand(): void
     {
+        $this->app->beforeResolving(
+            Command::class,
+            function (string $command) {
+                Console::setCommandForValidation($command);
+            }
+        );
+
         $this->app->afterResolving(
             Command::class,
             function (Command $command) {
-                Console::setCommand($command);
 
                 $command->ignoreValidationErrors();
 
                 $command->setCode(
                     Closure::bind(function (InputInterface $input, OutputInterface $output) {
-                        Console::setCommand($this);
+                        Console::setCommandForValidation($this::class);
                         Console::validate();
 
                         /**
@@ -103,21 +97,16 @@ class ConsoleServiceProvider extends ServiceProvider
         );
     }
 
-    private function listenToCommandFinished(): void
+    private function listenToCommandEvents(): void
     {
         Event::listen(
             CommandStarting::class,
             function (CommandStarting $command) {
-
-                Closure::bind(
-                    function (string $command = null) {
-                        /** @var $this ConsoleOutput */
-                        $this->setCommandToValidateWith((string)$command);
-                    },
-                    Console::getFacadeRoot(),
-                    ConsoleOutput::class
-                )($command->command);
-            });
+                Console::setCommandForValidation(
+                    Artisan::all()[$command->command]->getName()
+                );
+            }
+        );
 
         Event::listen(
             CommandFinished::class,

@@ -2,8 +2,8 @@
 
 namespace Henzeb\Console\Tests\Unit\Console\Concerns\Stub;
 
-use Illuminate\Console\Command;
 use Henzeb\Console\Facades\Console;
+use Illuminate\Console\Command;
 
 class TestValidationCommand extends Command
 {
@@ -14,7 +14,7 @@ class TestValidationCommand extends Command
     protected function configure()
     {
         Console::validateWith([
-            '--test'=>'size:2'
+            '--test' => 'size:3'
         ]);
     }
 

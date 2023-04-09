@@ -2,6 +2,12 @@
 
 All notable changes to `Laravel Console Facade` will be documented in this file
 
+## 1.16.0 - 2023-04-09
+
+- added [tail](README.md#tail) for easy scrolling functionality
+- added [console](README.md#console-helper) helper function
+- fixed some issues with validation
+
 ## 1.15.0 - 2023-03-29
 
 - added easy-to-use interface for [verbose](README.md#verbosity) output

@@ -2,17 +2,17 @@
 
 namespace Henzeb\Console\Tests\Unit\Console\Concerns;
 
-use Illuminate\Console\Parser;
-use Orchestra\Testbench\TestCase;
 use Henzeb\Console\Facades\Console;
+use Henzeb\Console\Providers\ConsoleServiceProvider;
+use Henzeb\Console\Tests\Unit\Console\Concerns\Stub\StubCommandServiceProvider;
 use Illuminate\Console\OutputStyle;
+use Illuminate\Console\Parser;
 use Illuminate\Support\Facades\Artisan;
+use Orchestra\Testbench\TestCase;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
-use Symfony\Component\Console\Input\InputDefinition;
-use Henzeb\Console\Providers\ConsoleServiceProvider;
-use Symfony\Component\Console\Exception\InvalidArgumentException;
-use Henzeb\Console\Tests\Unit\Console\Concerns\Stub\StubCommandServiceProvider;
 
 class ValidatesInputTest extends TestCase
 {
@@ -157,19 +157,36 @@ class ValidatesInputTest extends TestCase
     public function testAutomatedValidationFails()
     {
         $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches("/The --test .*must be 3 characters./");
 
         Artisan::call('test:test', ['--test' => 'a']);
     }
 
     public function testAutomatedValidationSucceeds()
     {
-        $this->assertEquals(0, Artisan::call('test:test', ['--test' => 'ab']));
+        $this->assertEquals(0, Artisan::call('test:test', ['--test' => 'abc']));
     }
 
     public function testClosureCommand()
     {
         $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches("/The --test .*must be 2 characters./");
 
         Artisan::call('test:closure', ['--test' => 'a']);
+    }
+
+    public function testSecondClosureCommand()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches("/The --test .*must be 4 characters./");
+
+        Artisan::call('test:second-closure', ['--test' => 'a']);
+    }
+
+    public function testClosureWithoutValidationCommand()
+    {
+        $this->expectNotToPerformAssertions();
+
+        Artisan::call('test:no-validation-rules', ['--test' => 'a']);
     }
 }

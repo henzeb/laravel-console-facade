@@ -3,17 +3,27 @@
 namespace Henzeb\Console\Concerns;
 
 use Closure;
-use Illuminate\Support\MessageBag;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\MessageBag;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\Input;
 use Symfony\Component\Console\Input\InputDefinition;
-use Symfony\Component\Console\Exception\InvalidArgumentException;
 
 trait ValidatesInput
 {
     private array $rules = [];
     private array $messages = [];
-    private string $commandToValidateWith = 'default';
+    private string $command = 'default';
+
+    public function setCommandForValidation(string $command): void
+    {
+        $this->command = $command;
+    }
+
+    private function getCommandForValidation(): string
+    {
+        return $this->command;
+    }
 
     private function getDefinition(): InputDefinition
     {
@@ -26,18 +36,10 @@ trait ValidatesInput
         )();
     }
 
-    private function commandToValidateWithDefault() {
-        $this->setCommandToValidateWith('default');
-    }
-
-    private function setCommandToValidateWith(string $command) {
-        $this->commandToValidateWith = $command;
-    }
-
     public function validateWith(array $rules, array $messages = []): void
     {
-        $this->rules[$this->commandToValidateWith] = $rules;
-        $this->messages[$this->commandToValidateWith] = $messages;
+        $this->rules[$this->getCommandForValidation()] = $rules;
+        $this->messages[$this->getCommandForValidation()] = $messages;
     }
 
     private function getData(): array
@@ -59,8 +61,7 @@ trait ValidatesInput
 
     public function shouldValidate(): bool
     {
-        return !empty($this->rules[get_class($this->getCommand())])
-            || !empty($this->rules['default']);
+        return !empty($this->rules[$this->getCommandForValidation()]);
     }
 
     /**
@@ -71,7 +72,7 @@ trait ValidatesInput
     public function validate(): void
     {
         if ($this->shouldValidate()) {
-            $command = get_class($this->getCommand());
+            $command = $this->getCommandForValidation();
             $validator = Validator::make(
                 $this->getData(),
                 $this->rules[$command] ?? $this->rules['default'],

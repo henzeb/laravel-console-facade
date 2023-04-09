@@ -5,7 +5,6 @@ namespace Henzeb\Console\Output;
 
 use Closure;
 use Henzeb\Console\Concerns\InteractsWithArguments;
-use Henzeb\Console\Concerns\InteractsWithCommand;
 use Henzeb\Console\Concerns\InteractsWithExit;
 use Henzeb\Console\Concerns\InteractsWithInfiniteLoop;
 use Henzeb\Console\Concerns\InteractsWithIO;
@@ -31,7 +30,6 @@ class ConsoleOutput
         InteractsWithSleep,
         InteractsWithSignals,
         InteractsWithOptions,
-        InteractsWithCommand,
         InteractsWithArguments,
         InteractsWithInfiniteLoop;
 
