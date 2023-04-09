@@ -37,6 +37,8 @@ class InteractsWithExitTest extends TestCase
     {
         App::shouldReceive('runningUnitTests')
             ->andReturn(false);
+        App::shouldReceive('runningInConsole')
+            ->andReturn(true);
         $this->expectException(RuntimeException::class);
         $output = new ConsoleOutput();
 

@@ -4,6 +4,7 @@ namespace Henzeb\Console\Providers;
 
 use Closure;
 use Henzeb\Console\Facades\Console;
+use Henzeb\Console\Output\NullOutput;
 use Henzeb\Console\Stores\OutputStore;
 use Illuminate\Console\Command;
 use Illuminate\Console\Events\CommandFinished;
@@ -26,9 +27,11 @@ class ConsoleServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->app->singleton('henzeb.outputstyle', function () {
+            $inConsole = App::runningInConsole();
+            $unitTests = App::runningUnitTests();
             return new OutputStyle(
-                App::runningUnitTests() ? new ArrayInput([]) : new ArgvInput(),
-                new SymfonyConsoleOutput()
+                $inConsole && !App::runningUnitTests() ? new ArgvInput() : new ArrayInput([]),
+                $inConsole ? new SymfonyConsoleOutput() : new NullOutput()
             );
         });
 
