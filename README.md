@@ -46,12 +46,14 @@ Instead of using the Console facade, you can also use the `console`
 helper method.
 
 ````php
+use function Henzeb\Console\Functions\console;
+
 console('hello'); // outputs hello
 console()->info('hello'); // outputs hello
 console()->ask('Want an answer?'); // asks you a question
 ````
 
-Note: Troughout the documentation the facade is used, but everything can be
+Note: Throughout the documentation the facade is used, but everything can be
 accessed with the helper method as well.
 
 ### Laravel's components factory
@@ -193,7 +195,7 @@ Console::tail()->setMaxHeight(15); // upgrades height to 15
 
 Inside Symfony's ConsoleSectionOutput, there is already a way of
 doing this, but there are numerous issues with. This implementation fixes
-them, and allows you to use any output, like progress bars and tables 
+them, and allows you to use any output, like progress bars and tables
 with ease.
 
 You can still use Symfony's implementation on regular sections.

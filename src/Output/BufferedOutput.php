@@ -2,9 +2,9 @@
 
 namespace Henzeb\Console\Output;
 
-use Symfony\Component\Console\Output\BufferedOutput as SymfonyBufferedOutput;
+use Illuminate\Console\BufferedConsoleOutput;
 
-class BufferedOutput extends SymfonyBufferedOutput
+class BufferedOutput extends BufferedConsoleOutput
 {
     /**
      * @var false|resource
@@ -29,7 +29,7 @@ class BufferedOutput extends SymfonyBufferedOutput
         }
 
         rewind($this->getStream());
-        
+
         return tap(
             stream_get_contents($this->getStream()),
             function () {

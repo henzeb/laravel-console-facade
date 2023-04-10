@@ -88,7 +88,6 @@ class ConsoleServiceProviderTest extends TestCase
             [
                 true, false, ArgvInput::class, SymfonyConsoleOutput::class
             ]
-
         ];
     }
 

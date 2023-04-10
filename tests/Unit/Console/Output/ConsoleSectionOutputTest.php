@@ -5,10 +5,10 @@ namespace Henzeb\Console\Tests\Unit\Console\Output;
 
 use Closure;
 use Henzeb\Console\Facades\Console;
+use Henzeb\Console\Output\BufferedOutput;
 use Henzeb\Console\Output\ConsoleSectionOutput;
 use Henzeb\Console\Output\TailConsoleSectionOutput;
 use Henzeb\Console\Providers\ConsoleServiceProvider;
-use Illuminate\Console\BufferedConsoleOutput;
 use Illuminate\Console\OutputStyle;
 use Illuminate\Console\View\Components\Factory;
 use Mockery;
@@ -244,6 +244,20 @@ class ConsoleSectionOutputTest extends TestCase
         $this->assertTrue($expectedOutput === $actualOutput);
     }
 
+    public function testClear()
+    {
+        $section = $this->mock(ConsoleSectionOutput::class);
+        $section->expects('write')->with("\033[0m")->once();
+        $section->makePartial()->clear();
+    }
+
+    public function testClearWithLines()
+    {
+        $section = $this->mock(ConsoleSectionOutput::class);
+        $section->expects('write')->never();
+        $section->makePartial()->clear(1);
+    }
+
     public function testShouldDelete()
     {
         $reflector = new ReflectionClass(ConsoleSectionOutput::class);
@@ -264,27 +278,8 @@ class ConsoleSectionOutputTest extends TestCase
 
     public function testNewLine(): void
     {
-        $buffer = new class extends BufferedConsoleOutput {
-            private $stream = null;
-
-            public function getStream()
-            {
-                return $this->stream ??= fopen('php://memory', 'rw+');
-            }
-
-            public function isDecorated(): bool
-            {
-                return true;
-            }
-
-            public function fetch()
-            {
-                rewind($this->getStream());
-                $content = stream_get_contents($this->getStream());
-                ftruncate($this->getStream(), 0);
-                return $content;
-            }
-        };
+        $buffer = new BufferedOutput();
+        $buffer->setDecorated(true);
 
         Console::setOutput(new OutputStyle(Console::getInput(), $buffer));
         $section = Console::section('test');
