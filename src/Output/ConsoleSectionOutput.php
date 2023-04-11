@@ -69,8 +69,7 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
 
     public function createProgressBar(int $max = 0): ProgressBar
     {
-        return (new OutputStyle(self::getInput(), $this->output))
-            ->createProgressBar($max);
+        return $this->getOutput()->createProgressBar($max);
     }
 
     public function withProgressBar($totalSteps, Closure $callback)
