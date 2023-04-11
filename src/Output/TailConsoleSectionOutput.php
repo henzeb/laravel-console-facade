@@ -73,8 +73,7 @@ class TailConsoleSectionOutput extends ConsoleSectionOutput
         $this->replace(
             implode(
                 PHP_EOL, $content
-            ) . ($newline ? PHP_EOL : ''),
-            false
+            ) . ($newline ? PHP_EOL : '')
         );
     }
 }

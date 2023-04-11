@@ -397,7 +397,6 @@ you may want to give them different translations. Just add a second array
 like you would do with Laravel's validation engine:
 
 ````php
-
 Console::validateWith(
     [
         'id' => 'bail|int|exists:users',
@@ -409,6 +408,59 @@ Console::validateWith(
         'exists' => 'User with given id does not exist!'
         'prohibits' => 'Cannot be used together with :other'
     ]   
+);
+````
+
+### attribute names
+
+Laravel allows you to rename attributes.
+
+````php
+Console::validateWith(
+    [
+        'id' => 'bail|int|exists:users',
+        '--name' => 'string|min:2'
+    ],
+    attributes: [
+        'id' => 'user id',
+        '--name' => 'name'
+    ]
+);
+````
+
+### value names
+
+Just like attributes, you can also give certain values names.
+
+Below we see an example where the accepted flag must be a form of `true`
+when any gender is specified.
+
+````php
+Console::validateWith(
+    [
+        '--gender' =>'required|in:x,f,m',
+        '--accepted' => 'accepted_if:--gender,x,--gender,f,--gender,m',
+    ],
+    valueNames: [
+        '--gender' => [
+            'm' => 'male',
+            'f' => 'female', 
+            'x' => 'other gender'
+        ]       
+    ]
+);
+````
+
+### before validation callback
+
+When you need access to the Validator instance before execution, you can use the
+`beforeValidation` method.
+
+````php
+Console::beforeValidation(
+    function(Illuminate\Validation\Validator $validator){
+        // your logic
+    }
 );
 ````
 

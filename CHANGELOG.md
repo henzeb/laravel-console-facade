@@ -2,6 +2,11 @@
 
 All notable changes to `Laravel Console Facade` will be documented in this file
 
+## 1.18.0 - 2023-04-11
+
+- added extra parameters for [validateWith](README.md#validation)
+- added [beforeValidation](README.md#before-validation-callback)
+
 ## 1.17.0 - 2023-04-11
 
 - allow sections without names

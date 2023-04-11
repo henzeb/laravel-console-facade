@@ -3,6 +3,7 @@
 namespace Henzeb\Console\Concerns;
 
 use Closure;
+use Illuminate\Contracts\Validation\Validator as ValidatorInstance;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\MessageBag;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
@@ -13,6 +14,9 @@ trait ValidatesInput
 {
     private array $rules = [];
     private array $messages = [];
+    private array $attributes = [];
+    private array $valueNames = [];
+    private array $beforeValidation = [];
     private string $command = 'default';
 
     public function setCommandForValidation(string $command): void
@@ -36,10 +40,19 @@ trait ValidatesInput
         )();
     }
 
-    public function validateWith(array $rules, array $messages = []): void
+    public function validateWith(array $rules, array $messages = [], array $attributes = [], array $valueNames = []): void
     {
-        $this->rules[$this->getCommandForValidation()] = $rules;
-        $this->messages[$this->getCommandForValidation()] = $messages;
+        $command = $this->getCommandForValidation();
+
+        $this->rules[$command] = $rules;
+        $this->messages[$command] = $messages;
+        $this->attributes[$command] = $attributes;
+        $this->valueNames[$command] = $valueNames;
+    }
+
+    public function beforeValidation(callable $beforeValidation): void
+    {
+        $this->beforeValidation[$this->getCommandForValidation()] = $beforeValidation;
     }
 
     private function getData(): array
@@ -75,9 +88,14 @@ trait ValidatesInput
             $command = $this->getCommandForValidation();
             $validator = Validator::make(
                 $this->getData(),
-                $this->rules[$command] ?? $this->rules['default'],
-                $this->messages[$command] ?? $this->messages['default']
+                $this->rules[$command] ?? [],
+                $this->messages[$command] ?? [],
+                $this->attributes[$command] ?? [],
             );
+
+            $validator->setValueNames($this->valueNames[$command] ?? []);
+
+            $this->executeBeforeValidation($command, $validator);
 
             if ($validator->fails()) {
                 $this->throwNiceException($validator->getMessageBag());
@@ -133,5 +151,15 @@ trait ValidatesInput
             $option->isNegatable() ? '|--no-' . $name : '',
             $option->getShortcut() ? '|-' . $option->getShortcut() : ''
         );
+    }
+
+    /**
+     * @param string $command
+     * @param ValidatorInstance $validator
+     * @return void
+     */
+    public function executeBeforeValidation(string $command, ValidatorInstance $validator): void
+    {
+        ($this->beforeValidation[$command] ?? fn() => null)($validator);
     }
 }

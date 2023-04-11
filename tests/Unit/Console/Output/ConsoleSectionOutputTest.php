@@ -55,7 +55,7 @@ class ConsoleSectionOutputTest extends TestCase
 
         $output = $this->mock(ConsoleSectionOutput::class);
         $output->shouldAllowMockingProtectedMethods();
-        $output->expects('contentEndsWithNewLine')->andReturn(false);
+        $output->expects('contentEndsWithNewLine')->andReturn(true);
         (function () use ($outputStyle) {
             $this->output = $outputStyle;
         })->bindTo($output, ConsoleSectionOutput::class)();

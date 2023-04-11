@@ -138,6 +138,59 @@ class ValidatesInputTest extends TestCase
         }
     }
 
+    public function testValidateWithAttributeRenaming()
+    {
+        $this->setParameters('{--arg_required=}', '--arg_required fail');
+
+        Console::validateWith(
+            [
+                '--arg_required' => 'size:7'
+            ],
+            [],
+            [
+                '--arg_required' => 'required arg'
+            ]
+        );
+
+        $this->assertTrue(Console::optionGiven('arg_required'));
+
+        $this->expectException(InvalidArgumentException::class);
+
+        try {
+            Console::validate();
+        } catch (InvalidArgumentException $exception) {
+            $this->assertStringContainsString('The required arg', $exception->getMessage());
+            throw $exception;
+        }
+    }
+
+    public function testValidateWithValueNames()
+    {
+        $this->setParameters('{--arg1=} {--arg2=}', '--arg1 aa');
+
+        Console::validateWith(
+            [
+                '--arg2' => 'required_if:--arg1,aa'
+            ],
+            [],
+            [],
+            [
+                '--arg1' => [
+                    'aa' => 'double-a'
+                ]
+            ]
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+
+        try {
+            Console::validate();
+        } catch (InvalidArgumentException $exception) {
+            $this->assertStringContainsString('--arg1 is double-a', $exception->getMessage());
+            throw $exception;
+        }
+    }
+
     public function testArgumentShouldNotValidateIfNotGiven()
     {
         $this->setParameters('{arg_required} {--arg_required}', '--arg_required');
@@ -188,5 +241,31 @@ class ValidatesInputTest extends TestCase
         $this->expectNotToPerformAssertions();
 
         Artisan::call('test:no-validation-rules', ['--test' => 'a']);
+    }
+
+    public function testBeforeValidationCallback()
+    {
+        $actual = false;
+
+        Console::beforeValidation(
+            function () use (&$actual) {
+                $actual = true;
+            }
+        );
+        Console::validateWith([
+            '--test' => 'string'
+        ]);
+
+        Console::validate();
+
+        $this->assertTrue($actual);
+
+        $actual = false;
+        
+        Console::setCommandForValidation('test');
+        Console::validate();
+
+        $this->assertFalse($actual);
+
     }
 }
