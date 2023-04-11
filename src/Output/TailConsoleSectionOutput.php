@@ -2,20 +2,28 @@
 
 namespace Henzeb\Console\Output;
 
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+
 class TailConsoleSectionOutput extends ConsoleSectionOutput
 {
     private bool $allowWriteTail = true;
 
     public function __construct(
-        private int          $maxheight,
-        ConsoleSectionOutput $section
+        private int     $maxheight,
+        string          $name,
+        mixed           $stream,
+        array           &$sections,
+        OutputInterface $section,
+        InputInterface  $input,
     )
     {
         parent::__construct(
-            $section->getStream(),
-            $section->sections,
+            $name,
+            $stream,
+            $sections,
             $section,
-            $section->getInput()
+            $input
         );
     }
 
@@ -49,8 +57,7 @@ class TailConsoleSectionOutput extends ConsoleSectionOutput
 
     private function getContentAsArray(string $message): array
     {
-        return
-            explode(PHP_EOL, $this->getContent() . $message);
+        return explode(PHP_EOL, $this->getContent() . $message);
     }
 
     private function writeTail(string $message = '', bool $newline = false): void
@@ -66,7 +73,8 @@ class TailConsoleSectionOutput extends ConsoleSectionOutput
         $this->replace(
             implode(
                 PHP_EOL, $content
-            ) . ($newline ? PHP_EOL : '')
+            ) . ($newline ? PHP_EOL : ''),
+            false
         );
     }
 }

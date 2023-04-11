@@ -26,14 +26,18 @@ class ConsoleServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        $this->app->singleton('henzeb.outputstyle', function () {
-            $inConsole = App::runningInConsole();
-            $unitTests = App::runningUnitTests();
-            return new OutputStyle(
-                $inConsole && !App::runningUnitTests() ? new ArgvInput() : new ArrayInput([]),
-                $inConsole ? new SymfonyConsoleOutput() : new NullOutput()
-            );
-        });
+        $this->app->singleton(
+            'henzeb.outputstyle',
+            function () {
+                $inConsole = App::runningInConsole();
+                $unitTests = App::runningUnitTests();
+
+                return new OutputStyle(
+                    $inConsole && !$unitTests ? new ArgvInput() : new ArrayInput([]),
+                    $inConsole ? new SymfonyConsoleOutput() : new NullOutput()
+                );
+            }
+        );
 
         $this->afterResolvingOutputStyle();
 
@@ -82,6 +86,7 @@ class ConsoleServiceProvider extends ServiceProvider
 
                 $command->setCode(
                     Closure::bind(function (InputInterface $input, OutputInterface $output) {
+                        $this->ignoreValidationErrors();
                         Console::setCommandForValidation($this::class);
                         Console::validate();
 

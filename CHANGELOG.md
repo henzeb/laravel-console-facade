@@ -2,6 +2,11 @@
 
 All notable changes to `Laravel Console Facade` will be documented in this file
 
+## 1.17.0 - 2023-04-11
+
+- allow sections without names
+- `getOutput` on sections now return `OutputStyle` instead of itself.
+
 ## 1.16.0 - 2023-04-09
 
 - added [tail](README.md#tail) for easy scrolling functionality

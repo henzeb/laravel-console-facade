@@ -97,7 +97,7 @@ class ConsoleSectionOutputTest extends TestCase
 
 
         $output->setVerbosity(ConsoleOutput::VERBOSITY_NORMAL);
-
+        $output->expects('name')->andReturn('test');
         $output->expects('isDecorated')->andReturn(true);
         $output->expects('replace')->with('expectedOutput' . PHP_EOL);
 
@@ -113,6 +113,7 @@ class ConsoleSectionOutputTest extends TestCase
         $stream = fopen('php://memory', 'rw+');
         $array = [];
         $console = new ConsoleSectionOutput(
+            'name',
             $stream, $array,
             new ConsoleOutput(decorated: false),
             new ArrayInput([])
@@ -128,6 +129,7 @@ class ConsoleSectionOutputTest extends TestCase
         $stream = fopen('php://memory', 'rw+');
         $array = [];
         $console = new ConsoleSectionOutput(
+            'test',
             $stream, $array,
             new ConsoleOutput(decorated: true),
             new ArrayInput([])
@@ -143,6 +145,7 @@ class ConsoleSectionOutputTest extends TestCase
 
         $array = [];
         $console = new ConsoleSectionOutput(
+            'test',
             $stream,
             $array,
             new ConsoleOutput(decorated: true),
@@ -311,5 +314,20 @@ class ConsoleSectionOutputTest extends TestCase
 
         $tail = $console->tail(2);
         $this->assertEquals(2, $tail->getMaxHeight());
+    }
+
+    public function testGetName(): void
+    {
+        $console = (new \Henzeb\Console\Output\ConsoleOutput())->section('test');
+
+        $this->assertEquals('test', $console->name());
+    }
+
+    public function testGetNameOfUniqueID(): void
+    {
+        $console = new \Henzeb\Console\Output\ConsoleOutput();
+        $section = $console->section();
+
+        $this->assertSame($section, $console->section($section->name()));
     }
 }

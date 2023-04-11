@@ -88,7 +88,7 @@ class MyClass {
    
     public function useSection(): void
     {   
-        Console::section('section1')->table(['header'=>'title'], [[]]);
+        Console::section()->table(['header'=>'title'], [[]]);
         Console::section('section2')->withProgressBar(100, fn()=>true);
         Console::section('section1')->components()->bulletList(['this one', 'Another one']);
         Console::section('section1')->clear();
@@ -96,6 +96,16 @@ class MyClass {
     }
 }
 ```
+
+When you do not pass a name, a `uniqid` will be given each time you call section. You can retrieve the name of
+this section by doing the following:
+
+````php
+$section = Console::section();
+$section->name(); //returns string similar to 64350abe27355
+$section = Console::section('section1');
+$section->name(); //returns section1
+````
 
 ### delayed rendering
 
@@ -113,7 +123,7 @@ class MyClass {
 
     public function renderWhenReady(): void
     {   
-        Console::section('section1')->render(
+        Console::section()->render(
             function(ConsoleSectionOutput $section){
                 $section->table(['header'=>'title'], [[]]);
             }
@@ -137,12 +147,12 @@ repeated rendering.
 If you find your console application is flickering, `replace` is a
 good `replacement`.
 
-Note: `render` and the callback method on `section` are both using `replace`
+Note: `render`, `watch`, `tail` and the callback method on `section` are all using `replace`
 under the hood.
 
 ### watch
 
-`watch` is a method that mimics the `watch` command in Linux. By default it
+`watch` is a method that mimics the `watch` command in Linux. By default, it
 will execute the given callback every 2 seconds.
 
 ```php

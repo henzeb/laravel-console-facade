@@ -63,16 +63,18 @@ class ConsoleOutput
 
     public function withProgressBar($totalSteps, Closure $callback)
     {
-        return $this->section(uniqid())->withProgressBar($totalSteps, $callback);
+        return $this->section()->withProgressBar($totalSteps, $callback);
     }
 
-    public function section(string $name, callable $render = null): ConsoleSectionOutput
+    public function section(string $name = null, callable $render = null): ConsoleSectionOutput
     {
-        $section = $this->getSection($name);
+        $section = $this->getSection($name ?? uniqid());
         $section->setInput($this->getInput());
+
         if ($render) {
             $section->render($render);
         }
+
         return $section;
     }
 
@@ -90,8 +92,6 @@ class ConsoleOutput
             return;
         }
 
-        $sectionName = $sectionName ?? uniqid();
-
         while ($this->infiniteLoop()) {
             $this->section($sectionName)
                 ->render($render);
@@ -102,7 +102,7 @@ class ConsoleOutput
 
     public function tail(int $maxHeight = 10, string $sectionName = null): TailConsoleSectionOutput
     {
-        return $this->section($sectionName ?? uniqid())->tail($maxHeight);
+        return $this->section($sectionName)->tail($maxHeight);
     }
 
     private function getSection(string $name): ConsoleSectionOutput
@@ -112,6 +112,7 @@ class ConsoleOutput
         }
 
         return $this->sections[$name] = new ConsoleSectionOutput(
+            $name,
             $this->getOutput()->getOutput()->getStream(),
             $this->sections,
             $this->getOutput(),
