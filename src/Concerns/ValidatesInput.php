@@ -131,9 +131,11 @@ trait ValidatesInput
                 )
                 ->map(
                     function (array $value, string $name) {
-                        return $name . PHP_EOL . collect($value)->map(
-                                fn(string $value) => "  " . $value
-                            )->implode(PHP_EOL);
+                        return $name . PHP_EOL . collect($value)
+                                ->flatten()
+                                ->map(
+                                    fn(string $value) => "  " . $value
+                                )->implode(PHP_EOL);
                     }
                 )->implode(PHP_EOL);
     }

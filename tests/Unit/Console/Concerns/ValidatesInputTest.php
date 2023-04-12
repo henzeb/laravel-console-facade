@@ -138,6 +138,27 @@ class ValidatesInputTest extends TestCase
         }
     }
 
+    public function testValidationWithMessage(): void
+    {
+        $this->setParameters('{--gender=}', '--gender d');
+
+        Console::validateWith(
+            [
+                '--gender' => 'required|in:m,f,x'
+            ],
+            [
+                '--gender.in' => 'message'
+            ]
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/--gender\n  message/');
+
+        Console::validate();
+
+
+    }
+
     public function testValidateWithAttributeRenaming()
     {
         $this->setParameters('{--arg_required=}', '--arg_required fail');
@@ -261,7 +282,7 @@ class ValidatesInputTest extends TestCase
         $this->assertTrue($actual);
 
         $actual = false;
-        
+
         Console::setCommandForValidation('test');
         Console::validate();
 
