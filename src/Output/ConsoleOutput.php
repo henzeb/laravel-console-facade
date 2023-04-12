@@ -92,6 +92,8 @@ class ConsoleOutput
             return;
         }
 
+        $sectionName = $sectionName ?? uniqid();
+
         while ($this->infiniteLoop()) {
             $this->section($sectionName)
                 ->render($render);
