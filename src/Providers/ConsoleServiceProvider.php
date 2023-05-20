@@ -110,6 +110,10 @@ class ConsoleServiceProvider extends ServiceProvider
         Event::listen(
             CommandStarting::class,
             function (CommandStarting $command) {
+                if (!$command->command) {
+                    return;
+                }
+
                 Console::setCommandForValidation(
                     Artisan::all()[$command->command]->getName()
                 );
