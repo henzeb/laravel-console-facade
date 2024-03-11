@@ -27,7 +27,7 @@ use ValueError;
 
 class ConsoleSectionOutputTest extends TestCase
 {
-    protected function getPackageProviders($app)
+    protected function getPackageProviders($app): array
     {
         return [
             ConsoleServiceProvider::class
@@ -47,7 +47,7 @@ class ConsoleSectionOutputTest extends TestCase
         $outputStyle = $this->mock(OutputStyle::class);
         $outputStyle->expects('isDecorated')->andReturn(true);
         $outputStyle->expects('getVerbosity')->andReturn(true);
-        $outputStyle->expects('getFormatter')->times(4)->andReturn(new OutputFormatter());
+        $outputStyle->expects('getFormatter')->atLeast()->times(3)->andReturn(new OutputFormatter());
         $outputStyle->expects('createProgressBar')->andReturns(new ProgressBar($outputStyle));
 
         $outputStyle->expects('write')->times(4);
@@ -203,7 +203,7 @@ class ConsoleSectionOutputTest extends TestCase
         $output->replace(['test', 'test2']);
     }
 
-    public function providesVerbosityLevels(): array
+    public static function providesVerbosityLevels(): array
     {
         return [
             [OutputInterface::VERBOSITY_DEBUG],

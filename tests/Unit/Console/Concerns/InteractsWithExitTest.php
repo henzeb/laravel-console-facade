@@ -11,14 +11,14 @@ use RuntimeException;
 
 class InteractsWithExitTest extends TestCase
 {
-    protected function getPackageProviders($app)
+    protected function getPackageProviders($app): array
     {
         return [
             ConsoleServiceProvider::class
         ];
     }
 
-    public function providesMethods(): array
+    public static function providesMethods(): array
     {
         return [
             'shouldExit' => ['shouldExit'],

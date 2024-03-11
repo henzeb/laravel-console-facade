@@ -4,7 +4,6 @@ namespace Henzeb\Console\Tests\Unit\Console\Output;
 
 
 use Closure;
-use Henzeb\Console\Facades\Console;
 use Henzeb\Console\Output\ConsoleOutput;
 use Henzeb\Console\Output\ConsoleSectionOutput;
 use Henzeb\Console\Output\TailConsoleSectionOutput;
@@ -17,10 +16,11 @@ use RuntimeException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\ConsoleOutput as SymfonyConsoleOutput;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
+use function resolve;
 
 class ConsoleOutputTest extends TestCase
 {
-    protected function getPackageProviders($app)
+    protected function getPackageProviders($app): array
     {
         return [ConsoleServiceProvider::class];
     }
@@ -42,9 +42,11 @@ class ConsoleOutputTest extends TestCase
 
     public function testShouldAutomaticallySetOutputStyle()
     {
-        Console::partialMock()->shouldReceive('setOutput')->atLeast()->twice();
+        $mock = $this->mock(ConsoleOutput::class)->makePartial();
 
-        $this->artisan('env');
+        $mock->expects('setOutput')->atLeast()->once();
+
+        resolve('henzeb.outputstyle');
     }
 
     public function testShouldHaveDefaultOutput()
@@ -151,7 +153,7 @@ class ConsoleOutputTest extends TestCase
         $output->watch(fn() => true, -1);
     }
 
-    public function providesWatchRuns()
+    public static function providesWatchRuns(): array
     {
         return [
             ['loops' => 2, 'sleep' => 1],

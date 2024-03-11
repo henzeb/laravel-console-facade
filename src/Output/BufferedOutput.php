@@ -16,7 +16,7 @@ class BufferedOutput extends BufferedConsoleOutput
         return $this->stream ??= fopen('php://memory', 'r+');
     }
 
-    protected function doWrite(string $message, bool $newline)
+    protected function doWrite(string $message, bool $newline): void
     {
         fwrite($this->getStream(), $message . ($newline ? PHP_EOL : ''));
         fflush($this->getStream());

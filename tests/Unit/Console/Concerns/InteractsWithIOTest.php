@@ -15,14 +15,14 @@ class InteractsWithIOTest extends TestCase
 {
     use Conditionable;
 
-    protected function getPackageProviders($app)
+    protected function getPackageProviders($app): array
     {
         return [
             ConsoleServiceProvider::class
         ];
     }
 
-    public function providesOldVersions()
+    public static function providesOldVersions(): array
     {
         return [
             '8.83.23' => ['8.83.23'],
@@ -30,7 +30,7 @@ class InteractsWithIOTest extends TestCase
         ];
     }
 
-    public function providesNewVersions()
+    public static function providesNewVersions(): array
     {
         return [
             '9.21.0' => ['9.21.0'],

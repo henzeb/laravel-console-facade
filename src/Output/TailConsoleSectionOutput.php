@@ -43,7 +43,7 @@ class TailConsoleSectionOutput extends ConsoleSectionOutput
         return $this;
     }
 
-    protected function doWrite(string $message, bool $newline)
+    protected function doWrite(string $message, bool $newline): void
     {
         if ($this->allowWriteTail && $this->contentEndsWithNewLine()) {
             $this->writeTail($message, $newline);

@@ -49,7 +49,7 @@ class ConsoleServiceProviderTest extends TestCase
         Artisan::call('myApplication');
     }
 
-    public function providesFormatterStyleTestCases(): array
+    public static function providesFormatterStyleTestCases(): array
     {
         return [
             ['henzeb.console.verbose', "\e[36mtest\e[39m"],
@@ -73,7 +73,7 @@ class ConsoleServiceProviderTest extends TestCase
         $this->assertEquals($expected, $formatter->format(sprintf('<%s>test</>', $tag)));
     }
 
-    public function providesOutputStyleResolveCases(): array
+    public static function providesOutputStyleResolveCases(): array
     {
         return [
             [

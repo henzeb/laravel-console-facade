@@ -20,7 +20,7 @@ class TailConsoleSectionOutputTest extends TestCase
         ];
     }
 
-    public function providesConstructTestcases(): array
+    public static function providesConstructTestcases(): array
     {
         return [
             [1, true, 10],

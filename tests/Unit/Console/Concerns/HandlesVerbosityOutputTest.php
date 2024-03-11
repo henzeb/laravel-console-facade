@@ -18,7 +18,7 @@ class HandlesVerbosityOutputTest extends TestCase
         return [ConsoleServiceProvider::class, StubCommandServiceProvider::class];
     }
 
-    public function providesVerbosityCases(): array
+    public static function providesVerbosityCases(): array
     {
         return [
             'verbose' => ['method' => 'verbose', 'verbosity' => ConsoleOutputInterface::VERBOSITY_VERBOSE],
@@ -28,7 +28,7 @@ class HandlesVerbosityOutputTest extends TestCase
     }
 
 
-    public function providesVerbosityOutputTestcases()
+    public static function providesVerbosityOutputTestcases()
     {
         return [
             'debug-debug' => [

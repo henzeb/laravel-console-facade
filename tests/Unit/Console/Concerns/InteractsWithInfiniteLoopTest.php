@@ -2,11 +2,11 @@
 
 namespace Henzeb\Console\Tests\Unit\Console\Concerns;
 
-use RuntimeException;
-use PHPUnit\Framework\Assert;
-use Orchestra\Testbench\TestCase;
-use Illuminate\Support\Facades\App;
 use Henzeb\Console\Concerns\InteractsWithInfiniteLoop;
+use Illuminate\Support\Facades\App;
+use Orchestra\Testbench\TestCase;
+use PHPUnit\Framework\Assert;
+use RuntimeException;
 
 
 class InteractsWithInfiniteLoopTest extends TestCase
@@ -29,7 +29,7 @@ class InteractsWithInfiniteLoopTest extends TestCase
         $infiniteLoops->watchShouldLoop(1);
     }
 
-    public function providesLoopCounts()
+    public static function providesLoopCounts(): array
     {
         return [
             '1' => [1],
@@ -51,7 +51,9 @@ class InteractsWithInfiniteLoopTest extends TestCase
             use InteractsWithInfiniteLoop {
                 infiniteLoop as public;
             }
-            public function shouldSleepWith(int $seconds) {
+
+            public function shouldSleepWith(int $seconds)
+            {
                 Assert::assertEquals(2, $seconds);
             }
         };

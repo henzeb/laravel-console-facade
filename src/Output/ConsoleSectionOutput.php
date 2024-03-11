@@ -85,7 +85,7 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
         );
     }
 
-    public function setVerbosity(int $level)
+    public function setVerbosity(int $level): void
     {
         parent::setVerbosity($level);
     }
@@ -166,7 +166,7 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
         $this->replace($streamer->getContent());
     }
 
-    public function clear(int $lines = null)
+    public function clear(int $lines = null): void
     {
         if ($lines === null) {
             $this->write("\033[0m");
@@ -184,6 +184,6 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
 
     public function newLine($count = 1)
     {
-        $this->write(str_repeat(PHP_EOL, $count - 1));
+        $this->write(str_repeat(PHP_EOL, $count - 1), true);
     }
 }
