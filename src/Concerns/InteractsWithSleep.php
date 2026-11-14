@@ -6,7 +6,6 @@ use Closure;
 use Illuminate\Support\Facades\App;
 use Mockery;
 use Mockery\Expectation;
-use Mockery\ExpectationInterface;
 use PHPUnit\Framework\Assert;
 use RuntimeException;
 
@@ -52,7 +51,7 @@ trait InteractsWithSleep
     }
 
     /**
-     * @return Expectation|ExpectationInterface|Mockery\HigherOrderMessage
+     * @return Expectation
      */
     private function setShouldSleep()
     {
@@ -60,13 +59,16 @@ trait InteractsWithSleep
             throw new RuntimeException('Not running inside a UnitTest');
         }
 
-        return tap(
-            Mockery::mock('ConsoleOutput'),
-            function ($mock) {
-                $this->sleepMethod = function ($with) use ($mock) {
-                    return $mock->makePartial()->sleep($with);
-                };
+        $mock = Mockery::mock(self::class);
+
+        $this->sleepMethod = function (int $with) use ($mock): void {
+            $partial = $mock->makePartial();
+
+            if (method_exists($partial, 'sleep')) {
+                $partial->sleep($with);
             }
-        )->shouldReceive('sleep');
+        };
+
+        return $mock->shouldReceive('sleep');
     }
 }

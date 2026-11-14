@@ -7,6 +7,7 @@ use Henzeb\Console\Providers\ConsoleServiceProvider;
 use Henzeb\Console\Tests\Unit\Console\Concerns\Stub\StubCommandServiceProvider;
 use Illuminate\Console\OutputStyle;
 use Orchestra\Testbench\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 
@@ -78,7 +79,7 @@ class HandlesVerbosityOutputTest extends TestCase
             ],
             'very-verbose-quiet' => [
                 'verbosity' => ConsoleOutputInterface::VERBOSITY_QUIET,
-                'text' => 'veryVerbose',
+                'command' => 'veryVerbose',
                 'expected' => ''
             ],
 
@@ -113,16 +114,14 @@ class HandlesVerbosityOutputTest extends TestCase
     /**
      * @param int $verbosity
      * @param string $command
-     * @param string $expectedOutput
+     * @param string $expected
      * @return void
-     *
-     * @dataProvider providesVerbosityOutputTestcases
      */
-
+    #[DataProvider('providesVerbosityOutputTestcases')]
     public function testPrintsVerbosityOutput(
         int    $verbosity,
         string $command,
-        string $expectedOutput
+        string $expected
     ) {
         $bufferedOutput = new BufferedOutput();
         $output = new ConsoleOutput();
@@ -137,7 +136,7 @@ class HandlesVerbosityOutputTest extends TestCase
 
         $actualOutput = $bufferedOutput->fetch();
 
-        $this->assertEquals($expectedOutput, $actualOutput);
+        $this->assertEquals($expected, $actualOutput);
     }
 
     public function testSilence(): void

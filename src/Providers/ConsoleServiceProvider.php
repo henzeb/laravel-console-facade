@@ -57,9 +57,7 @@ class ConsoleServiceProvider extends ServiceProvider
                 $this->registerOutputFormatterStyles($outputStyle);
 
                 if ($this->app->resolved('henzeb.outputstyle')) {
-                    if ($output = Console::getOutput()) {
-                        OutputStore::add($output);
-                    }
+                    OutputStore::add(Console::getOutput());
 
                     Console::setOutput($outputStyle);
                 }
@@ -115,7 +113,7 @@ class ConsoleServiceProvider extends ServiceProvider
                 }
 
                 Console::setCommandForValidation(
-                    Artisan::all()[$command->command]->getName()
+                    Artisan::all()[$command->command]->getName() ?? $command->command
                 );
             }
         );
@@ -123,10 +121,10 @@ class ConsoleServiceProvider extends ServiceProvider
         Event::listen(
             CommandFinished::class,
             function () {
-                if (OutputStore::hasOutputs()) {
-                    Console::setOutput(
-                        OutputStore::pop()
-                    );
+                $output = OutputStore::pop();
+
+                if ($output !== null) {
+                    Console::setOutput($output);
                 }
             }
         );

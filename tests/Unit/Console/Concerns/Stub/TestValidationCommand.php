@@ -11,7 +11,7 @@ class TestValidationCommand extends Command
 
     protected $description = 'Command description';
 
-    protected function configure()
+    protected function configure(): void
     {
         Console::validateWith([
             '--test' => 'size:3'

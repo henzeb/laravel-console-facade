@@ -19,16 +19,16 @@ class InteractsWithSignalsTest extends TestCase
         ];
     }
 
-    private function mockExit(ConsoleOutput $output, callable $callback = null): void
+    private function mockExit(ConsoleOutput $output, ?callable $callback = null): void
     {
         Closure::bind(function () use ($callback) {
             $this->exitMethod = $callback ?? fn () => true;
         }, $output, ConsoleOutput::class)();
     }
 
-    private function executeHandler(ConsoleOutput $output, int $signal, array $siginfo = null): void
+    private function executeHandler(ConsoleOutput $output, int $signal, ?array $siginfo = null): void
     {
-        Closure::bind(function (int $signal, array $siginfo = null) {
+        Closure::bind(function (int $signal, ?array $siginfo = null) {
             $this->handleSignal($signal, $siginfo);
         }, $output, ConsoleOutput::class)(
             $signal,

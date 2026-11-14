@@ -54,6 +54,9 @@ class TailConsoleSectionOutput extends ConsoleSectionOutput
 
     }
 
+    /**
+     * @return array<int, string>
+     */
     private function getContentAsArray(string $message): array
     {
         return explode(PHP_EOL, $this->getContent() . $message);

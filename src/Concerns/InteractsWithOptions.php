@@ -7,6 +7,9 @@ use Symfony\Component\Console\Input\Input;
 
 trait InteractsWithOptions
 {
+    /**
+     * @param array<string, mixed> $options
+     */
     public function mergeOptions(array $options): void
     {
         Closure::bind(
@@ -24,7 +27,7 @@ trait InteractsWithOptions
     public function optionGiven(string $option): bool
     {
         return Closure::bind(
-            function ($option) {
+            function (string $option) {
                 return array_key_exists($option, $this->options);
             },
             $this->getInput(),

@@ -8,6 +8,7 @@ use Henzeb\Console\Output\TailConsoleSectionOutput;
 use Henzeb\Console\Providers\ConsoleServiceProvider;
 use Illuminate\Console\OutputStyle;
 use Orchestra\Testbench\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Console\Input\StringInput;
 
 class TailConsoleSectionOutputTest extends TestCase
@@ -29,9 +30,8 @@ class TailConsoleSectionOutputTest extends TestCase
 
     /**
      * @return void
-     * @dataProvider providesConstructTestcases
      */
-
+    #[DataProvider('providesConstructTestcases')]
     public function testConstruct(int $verbosity, bool $decorated, int $getMaxHeight)
     {
         $section = Console::section('section');

@@ -7,6 +7,7 @@ use Henzeb\Console\Concerns\InteractsWithIO;
 use Illuminate\Console\OutputStyle;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
+use RuntimeException;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleSectionOutput as SymfonyConsoleSectionOutput;
@@ -27,9 +28,17 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
             InteractsWithIO::withProgressBar as private parentWithProgressbar;
         }
 
+    /**
+     * @var array<SymfonyConsoleSectionOutput>
+     */
     protected array $sections = [];
     private ?TailConsoleSectionOutput $tail = null;
+    private ?OutputInterface $forwardTo = null;
 
+    /**
+     * @param resource|null $stream
+     * @param array<SymfonyConsoleSectionOutput> $sections
+     */
     public function __construct(
         private string  $name,
         mixed           $stream,
@@ -39,10 +48,21 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
     ) {
         $this->input = $input;
 
+        if (!is_resource($stream)) {
+            $stream = fopen('php://memory', 'rw+');
+
+            if ($stream === false) {
+                throw new RuntimeException('Unable to open a memory stream');
+            }
+
+            $this->forwardTo = $output;
+        }
+
+        $this->sections = &$sections;
 
         parent::__construct(
             $stream,
-            $this->sections = &$sections,
+            $sections,
             $output->getVerbosity(),
             $output->isDecorated(),
             $output->getFormatter()
@@ -71,15 +91,23 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
         return $this->getOutput()->createProgressBar($max);
     }
 
+    /**
+     * @param iterable<mixed>|int $totalSteps
+     * @return mixed
+     */
     public function withProgressBar($totalSteps, Closure $callback)
     {
         return tap(
             $this->parentWithProgressbar($totalSteps, $callback),
             function () {
                 if (!$this->contentEndsWithNewLine()) {
-                    (function () {
-                        $this->content[] = PHP_EOL;
-                    })->bindTo($this, SymfonyConsoleSectionOutput::class)();
+                    Closure::bind(
+                        function () {
+                            $this->content[] = PHP_EOL;
+                        },
+                        $this,
+                        SymfonyConsoleSectionOutput::class
+                    )();
                 }
             }
         );
@@ -90,6 +118,9 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
         parent::setVerbosity($level);
     }
 
+    /**
+     * @param iterable<string>|string $message
+     */
     public function replace(iterable|string $message): void
     {
         if (!$this->isDecorated()) {
@@ -100,7 +131,7 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
             explode(PHP_EOL, $this->getContent())
         );
 
-        $messages = is_iterable($message) ? $message : explode(PHP_EOL, $message);
+        $messages = array_values(is_iterable($message) ? iterator_to_array($message) : explode(PHP_EOL, $message));
 
 
         $stream = $this->getStream();
@@ -131,11 +162,22 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
         return ($this->tail ??= new TailConsoleSectionOutput(
             $maxHeight,
             $this->name(),
-            $this->getStream(),
+            $this->forwardTo ? null : $this->getStream(),
             $this->sections,
-            $this->output->getOutput(),
+            $this->forwardTo ?? $this->output->getOutput(),
             $this->getInput()
         ))->tail($maxHeight);
+    }
+
+    protected function doWrite(string $message, bool $newline): void
+    {
+        if ($this->forwardTo) {
+            $this->forwardTo->write($message, $newline, OutputInterface::OUTPUT_RAW);
+
+            return;
+        }
+
+        parent::doWrite($message, $newline);
     }
 
     private function clearContentCache(): void
@@ -150,12 +192,21 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
         )();
     }
 
+    /**
+     * @return void
+     */
     public function render(callable $message)
     {
         $array = [];
+        $stream = fopen('php://memory', 'rw+');
+
+        if ($stream === false) {
+            throw new RuntimeException('Unable to open a memory stream');
+        }
+
         $streamer = new ConsoleSectionOutput(
             $this->name(),
-            fopen('php://memory', 'rw+'),
+            $stream,
             $array,
             $this->getOutput(),
             $this->input
@@ -166,7 +217,7 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
         $this->replace($streamer->getContent());
     }
 
-    public function clear(int $lines = null): void
+    public function clear(?int $lines = null): void
     {
         if ($lines === null) {
             $this->write("\033[0m");
@@ -175,13 +226,17 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
         parent::clear($lines);
     }
 
-    public function delete(int $lines = null): self
+    public function delete(?int $lines = null): self
     {
         $this->clear($lines);
 
         return $this;
     }
 
+    /**
+     * @param int $count
+     * @return void
+     */
     public function newLine($count = 1)
     {
         $this->write(str_repeat(PHP_EOL, $count - 1), true);

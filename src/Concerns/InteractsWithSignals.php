@@ -6,6 +6,9 @@ use Closure;
 
 trait InteractsWithSignals
 {
+    /**
+     * @var array<string, array<int, array<int, Closure>>>
+     */
     private array $signalHandlers = [];
 
     private function getCommandName(): string
@@ -70,6 +73,9 @@ trait InteractsWithSignals
         );
     }
 
+    /**
+     * @param mixed $siginfo
+     */
     protected function handleSignal(int $signal, $siginfo = null): void
     {
         $shouldExit = false;

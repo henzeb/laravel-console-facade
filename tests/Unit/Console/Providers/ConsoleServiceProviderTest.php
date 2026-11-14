@@ -10,6 +10,7 @@ use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Artisan;
 use Orchestra\Testbench\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\ConsoleOutput as SymfonyConsoleOutput;
@@ -60,8 +61,8 @@ class ConsoleServiceProviderTest extends TestCase
 
     /**
      * @return void
-     * @dataProvider providesFormatterStyleTestCases
      */
+    #[DataProvider('providesFormatterStyleTestCases')]
     public function testShouldHaveStyleRegistered(
         string $tag,
         string $expected
@@ -96,8 +97,8 @@ class ConsoleServiceProviderTest extends TestCase
      * @param string $expectedInput
      * @param string $expectedOutput
      * @return void
-     * @dataProvider providesOutputStyleResolveCases
      */
+    #[DataProvider('providesOutputStyleResolveCases')]
     public function testResolveOutputStyle(
         bool   $runningInConsole,
         bool   $runningUnitTests,

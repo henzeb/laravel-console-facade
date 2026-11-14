@@ -6,6 +6,7 @@ use Henzeb\Console\Output\ConsoleOutput;
 use Henzeb\Console\Providers\ConsoleServiceProvider;
 use Illuminate\Support\Facades\App;
 use Orchestra\Testbench\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 
 class InteractsWithExitTest extends TestCase
@@ -29,9 +30,8 @@ class InteractsWithExitTest extends TestCase
     /**
      * @param string $method
      * @return void
-     *
-     * @dataProvider providesMethods
      */
+    #[DataProvider('providesMethods')]
     public function testShouldThrowExceptionWhenNotInUnitTests(string $method)
     {
         App::shouldReceive('runningUnitTests')

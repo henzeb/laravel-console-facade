@@ -3,16 +3,20 @@
 namespace Henzeb\Console\Tests\Unit\Console\Output;
 
 use Closure;
+use Henzeb\Console\Facades\Console;
 use Henzeb\Console\Output\ConsoleOutput;
 use Henzeb\Console\Output\ConsoleSectionOutput;
 use Henzeb\Console\Output\TailConsoleSectionOutput;
 use Henzeb\Console\Providers\ConsoleServiceProvider;
 use Illuminate\Console\OutputStyle;
 use Illuminate\Console\View\Components\Factory;
+use Illuminate\Support\Facades\Artisan;
 use Mockery;
 use Orchestra\Testbench\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\BufferedOutput as SymfonyBufferedOutput;
 use Symfony\Component\Console\Output\ConsoleOutput as SymfonyConsoleOutput;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 
@@ -55,6 +59,35 @@ class ConsoleOutputTest extends TestCase
             OutputStyle::class,
             (new ConsoleOutput())->getOutput()
         );
+    }
+
+    public function testSectionWritesToOutputWithoutStream(): void
+    {
+        $output = new SymfonyBufferedOutput();
+        $console = new ConsoleOutput();
+        $console->setOutput(new OutputStyle(new ArrayInput([]), $output));
+
+        $console->section('test')->info('in section');
+        $console->tail(5, 'tail')->line('in tail');
+
+        $this->assertSame('in section' . PHP_EOL . 'in tail' . PHP_EOL, $output->fetch());
+    }
+
+    public function testSectionWritesToArtisanCallOutput(): void
+    {
+        Artisan::command('test:section', function () {
+            Console::section('section')->info('in section');
+            Console::section('section')->withProgressBar([1], fn () => null);
+        });
+
+        Console::getOutput();
+
+        $this->assertSame(0, Artisan::call('test:section'));
+
+        $output = Artisan::output();
+
+        $this->assertStringContainsString('in section' . PHP_EOL, $output);
+        $this->assertStringContainsString('1/1', $output);
     }
 
     public function testShouldReturnSection(): void
@@ -167,10 +200,9 @@ class ConsoleOutputTest extends TestCase
      * @param int $sleep
      * @param string|null $name
      * @return void
-     *
-     * @dataProvider providesWatchRuns
      */
-    public function testWatchShouldRun(int $loops, int $sleep, string $name = null)
+    #[DataProvider('providesWatchRuns')]
+    public function testWatchShouldRun(int $loops, int $sleep, ?string $name = null)
     {
         $output = Mockery::mock(ConsoleOutput::class)->makePartial();
         $output->__construct();

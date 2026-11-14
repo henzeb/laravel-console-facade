@@ -60,6 +60,13 @@ class OutputStoreTest extends TestCase
         $this->assertTrue(OutputStore::hasOutputs());
     }
 
+    public function testAddShouldIgnoreNull(): void
+    {
+        OutputStore::add(null);
+
+        $this->assertFalse(OutputStore::hasOutputs());
+    }
+
     public function testShouldStackOutputs()
     {
         OutputStore::add(

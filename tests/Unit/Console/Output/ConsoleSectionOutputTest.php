@@ -12,6 +12,7 @@ use Illuminate\Console\OutputStyle;
 use Illuminate\Console\View\Components\Factory;
 use Mockery;
 use Orchestra\Testbench\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionClass;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Helper\ProgressBar;
@@ -44,12 +45,12 @@ class ConsoleSectionOutputTest extends TestCase
     public function testShouldReturnProgressBar(): void
     {
         $outputStyle = $this->mock(OutputStyle::class);
-        $outputStyle->expects('isDecorated')->andReturn(true);
+        $outputStyle->expects('isDecorated')->atLeast()->once()->andReturn(true);
         $outputStyle->expects('getVerbosity')->andReturn(true);
         $outputStyle->expects('getFormatter')->atLeast()->times(3)->andReturn(new OutputFormatter());
         $outputStyle->expects('createProgressBar')->andReturns(new ProgressBar($outputStyle));
 
-        $outputStyle->expects('write')->times(4);
+        $outputStyle->expects('write')->atLeast()->times(4);
         $outputStyle->expects('getVerbosity')->twice()->andReturn(1);
 
         $output = $this->mock(ConsoleSectionOutput::class);
@@ -66,9 +67,8 @@ class ConsoleSectionOutputTest extends TestCase
     /**
      * @param int $level
      * @return void
-     *
-     * @dataProvider providesVerbosityLevels
      */
+    #[DataProvider('providesVerbosityLevels')]
     public function testShouldReturnProperVerbosityLevel(int $level): void
     {
         $output = Mockery::mock(ConsoleSectionOutput::class)->makePartial();

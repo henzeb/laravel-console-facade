@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\App;
 use Mockery;
 use Mockery\Exception\InvalidCountException;
 use Orchestra\Testbench\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\ExpectationFailedException;
 use RuntimeException;
 
@@ -32,9 +33,8 @@ class InteractsWithSleepTest extends TestCase
     /**
      * @param string $method
      * @return void
-     *
-     * @dataProvider providesMethods
      */
+    #[DataProvider('providesMethods')]
     public function testShouldSleepWithThrowExceptionWhenNotInUnitTests(string $method)
     {
         App::shouldReceive('runningUnitTests')

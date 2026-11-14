@@ -24,6 +24,9 @@ trait InteractsWithInfiniteLoop
         return true;
     }
 
+    /**
+     * @return void
+     */
     public function watchShouldLoop(int $times, int $sleep = 1)
     {
         if (!App::runningUnitTests()) {

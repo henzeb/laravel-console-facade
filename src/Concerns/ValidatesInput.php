@@ -12,10 +12,29 @@ use Symfony\Component\Console\Input\InputDefinition;
 
 trait ValidatesInput
 {
+    /**
+     * @var array<string, array<string, mixed>>
+     */
     private array $rules = [];
+
+    /**
+     * @var array<string, array<string, string>>
+     */
     private array $messages = [];
+
+    /**
+     * @var array<string, array<string, string>>
+     */
     private array $attributes = [];
+
+    /**
+     * @var array<string, array<string, mixed>>
+     */
     private array $valueNames = [];
+
+    /**
+     * @var array<string, callable>
+     */
     private array $beforeValidation = [];
     private string $command = 'default';
 
@@ -40,6 +59,12 @@ trait ValidatesInput
         )();
     }
 
+    /**
+     * @param array<string, mixed> $rules
+     * @param array<string, string> $messages
+     * @param array<string, string> $attributes
+     * @param array<string, mixed> $valueNames
+     */
     public function validateWith(array $rules, array $messages = [], array $attributes = [], array $valueNames = []): void
     {
         $command = $this->getCommandForValidation();
@@ -55,6 +80,9 @@ trait ValidatesInput
         $this->beforeValidation[$this->getCommandForValidation()] = $beforeValidation;
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     private function getData(): array
     {
         return array_merge(
@@ -116,7 +144,7 @@ trait ValidatesInput
         $definition = $this->getDefinition();
 
         return
-            collect($messages)
+            collect($messages->messages())
                 ->mapWithKeys(
                     function ($value, $name) use ($definition) {
                         if (!$definition->hasArgument($name)) {
@@ -131,7 +159,6 @@ trait ValidatesInput
                 ->map(
                     function (array $value, string $name) {
                         return $name . PHP_EOL . collect($value)
-                                ->flatten()
                                 ->map(
                                     fn (string $value) => "  " . $value
                                 )->implode(PHP_EOL);

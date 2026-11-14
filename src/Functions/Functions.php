@@ -4,17 +4,19 @@ namespace Henzeb\Console\Functions;
 
 use Henzeb\Console\Facades\Console;
 use Henzeb\Console\Output\ConsoleOutput;
+use RuntimeException;
 
-function console(string $message = null): ConsoleOutput
+function console(?string $message = null): ConsoleOutput
 {
-    return tap(
-        Console::getFacadeRoot(),
-        function (ConsoleOutput $consoleOutput) use ($message) {
-            if ($message) {
-                $consoleOutput->info($message);
-            }
-        }
-    );
-}
+    $consoleOutput = Console::getFacadeRoot();
 
-;
+    if (!$consoleOutput instanceof ConsoleOutput) {
+        throw new RuntimeException('The Console facade does not resolve to ' . ConsoleOutput::class);
+    }
+
+    if ($message) {
+        $consoleOutput->info($message);
+    }
+
+    return $consoleOutput;
+}

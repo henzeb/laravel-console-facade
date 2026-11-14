@@ -9,6 +9,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Traits\Conditionable;
 use Orchestra\Testbench\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 
 class InteractsWithIOTest extends TestCase
@@ -42,9 +43,8 @@ class InteractsWithIOTest extends TestCase
     /**
      * @param string $version
      * @return void
-     *
-     * @dataProvider providesOldVersions
      */
+    #[DataProvider('providesOldVersions')]
     public function testFactoryShouldFailWhenVersionIsIncorrect(string $version): void
     {
         App::partialMock()->shouldReceive('version')->andReturn($version);
@@ -59,9 +59,8 @@ class InteractsWithIOTest extends TestCase
     /**
      * @param string $version
      * @return void
-     *
-     * @dataProvider providesNewVersions
      */
+    #[DataProvider('providesNewVersions')]
     public function testFactoryShouldSucceedWhenVersionIsIncorrect(string $version): void
     {
         App::partialMock()->shouldReceive('version')->andReturn($version);

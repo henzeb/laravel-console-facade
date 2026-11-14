@@ -7,6 +7,7 @@ use Henzeb\Console\Providers\ConsoleServiceProvider;
 use Henzeb\Console\Tests\Unit\Console\Concerns\Stub\StubCommandServiceProvider;
 use Illuminate\Console\OutputStyle;
 use Illuminate\Console\Parser;
+use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\Artisan;
 use Orchestra\Testbench\TestCase;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
@@ -19,6 +20,17 @@ class ValidatesInputTest extends TestCase
     protected function getPackageProviders($app)
     {
         return [ConsoleServiceProvider::class, StubCommandServiceProvider::class];
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $kernel = $this->app->make(Kernel::class);
+
+        if (method_exists($kernel, 'rerouteSymfonyCommandEvents')) {
+            $kernel->rerouteSymfonyCommandEvents();
+        }
     }
 
 

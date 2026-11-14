@@ -6,10 +6,17 @@ use Illuminate\Console\OutputStyle;
 
 abstract class OutputStore
 {
+    /**
+     * @var array<int, OutputStyle>
+     */
     public static array $outputs = [];
 
-    public static function add(OutputStyle $output): void
+    public static function add(?OutputStyle $output): void
     {
+        if ($output === null) {
+            return;
+        }
+
         self::$outputs[] = $output;
     }
 

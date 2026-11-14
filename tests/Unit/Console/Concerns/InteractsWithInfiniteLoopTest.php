@@ -6,6 +6,7 @@ use Henzeb\Console\Concerns\InteractsWithInfiniteLoop;
 use Illuminate\Support\Facades\App;
 use Orchestra\Testbench\TestCase;
 use PHPUnit\Framework\Assert;
+use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 
 class InteractsWithInfiniteLoopTest extends TestCase
@@ -41,9 +42,8 @@ class InteractsWithInfiniteLoopTest extends TestCase
     /**
      * @param int $loops
      * @return void
-     *
-     * @dataProvider providesLoopcounts
      */
+    #[DataProvider('providesLoopcounts')]
     public function testShouldLoopGivenTimes(int $loops)
     {
         $infiniteLoops = new class () {

@@ -7,6 +7,9 @@ use Symfony\Component\Console\Input\Input;
 
 trait InteractsWithArguments
 {
+    /**
+     * @param array<string, mixed> $arguments
+     */
     public function mergeArguments(array $arguments): void
     {
         Closure::bind(
@@ -25,7 +28,7 @@ trait InteractsWithArguments
     public function argumentGiven(string $argument): bool
     {
         return Closure::bind(
-            function ($argument) {
+            function (string $argument) {
                 return array_key_exists($argument, $this->arguments);
             },
             $this->getInput(),

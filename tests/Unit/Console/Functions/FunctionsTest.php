@@ -6,6 +6,8 @@ use Henzeb\Console\Facades\Console;
 use Henzeb\Console\Providers\ConsoleServiceProvider;
 use Illuminate\Console\OutputStyle;
 use Orchestra\Testbench\TestCase;
+use RuntimeException;
+use stdClass;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 use function Henzeb\Console\Functions\console;
@@ -38,5 +40,12 @@ class FunctionsTest extends TestCase
         $this->assertEquals('test' . PHP_EOL, $output->fetch());
     }
 
+    public function testConsoleFailsWhenFacadeDoesNotResolveToConsoleOutput()
+    {
+        Console::swap(new stdClass());
 
+        $this->expectException(RuntimeException::class);
+
+        console();
+    }
 }

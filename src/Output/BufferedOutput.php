@@ -3,17 +3,31 @@
 namespace Henzeb\Console\Output;
 
 use Illuminate\Console\BufferedConsoleOutput;
+use RuntimeException;
 
 class BufferedOutput extends BufferedConsoleOutput
 {
     /**
-     * @var false|resource
+     * @var resource|null
      */
     private $stream = null;
 
+    /**
+     * @return resource
+     */
     public function getStream()
     {
-        return $this->stream ??= fopen('php://memory', 'r+');
+        if ($this->stream === null) {
+            $stream = fopen('php://memory', 'r+');
+
+            if ($stream === false) {
+                throw new RuntimeException('Unable to open a stream for ' . static::class);
+            }
+
+            $this->stream = $stream;
+        }
+
+        return $this->stream;
     }
 
     protected function doWrite(string $message, bool $newline): void

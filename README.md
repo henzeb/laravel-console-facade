@@ -3,7 +3,6 @@
 [![Build Status](https://github.com/henzeb/laravel-console-facade/workflows/tests/badge.svg)](https://github.com/henzeb/laravel-console-facade/actions)
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/henzeb/laravel-console-facade.svg?style=flat-square)](https://packagist.org/packages/henzeb/laravel-console-facade)
 [![Total Downloads](https://img.shields.io/packagist/dt/henzeb/laravel-console-facade.svg?style=flat-square)](https://packagist.org/packages/henzeb/laravel-console-facade)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/64de174ad1e0c2680361/test_coverage)](https://codeclimate.com/github/henzeb/laravel-console-facade/test_coverage)
 [![License](https://img.shields.io/packagist/l/henzeb/laravel-console-facade)](https://packagist.org/packages/henzeb/laravel-console-facade)
 
 This package allows you to manage console output from places that are not
@@ -15,6 +14,8 @@ the constructors, creating real ugly not reusable code. This simplifies the
 process for me, and now for you.
 
 ## Installation
+
+Requires PHP 8.2 or higher and Laravel 12 or 13.
 
 Just install with the following command.
 

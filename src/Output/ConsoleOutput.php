@@ -16,6 +16,7 @@ use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
 use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\ConsoleSectionOutput as SymfonyConsoleSectionOutput;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 class ConsoleOutput
@@ -32,15 +33,25 @@ class ConsoleOutput
     use InteractsWithArguments;
     use InteractsWithInfiniteLoop;
 
+    /**
+     * @var array<int|string, SymfonyConsoleSectionOutput>
+     */
     private array $sections = [];
 
     public function __construct()
     {
-        $this->setOutput(
-            resolve('henzeb.outputstyle')
-        );
+        $output = resolve('henzeb.outputstyle');
+
+        if (!$output instanceof OutputStyle) {
+            throw new RuntimeException('henzeb.outputstyle does not resolve to ' . OutputStyle::class);
+        }
+
+        $this->setOutput($output);
     }
 
+    /**
+     * @return void
+     */
     public function setOutput(OutputStyle $output)
     {
         $this->output = $output;
@@ -60,12 +71,16 @@ class ConsoleOutput
         )();
     }
 
+    /**
+     * @param iterable<mixed>|int $totalSteps
+     * @return mixed
+     */
     public function withProgressBar($totalSteps, Closure $callback)
     {
         return $this->section()->withProgressBar($totalSteps, $callback);
     }
 
-    public function section(string $name = null, callable $render = null): ConsoleSectionOutput
+    public function section(?string $name = null, ?callable $render = null): ConsoleSectionOutput
     {
         $section = $this->getSection($name ?? uniqid());
         $section->setInput($this->getInput());
@@ -80,7 +95,7 @@ class ConsoleOutput
     public function watch(
         callable $render,
         int      $refreshRate = 2,
-        string   $sectionName = null
+        ?string   $sectionName = null
     ): void {
         if ($refreshRate <= 0) {
             throw new RuntimeException('The refresh rate for watch cannot be lower than 1');
@@ -100,23 +115,32 @@ class ConsoleOutput
         }
     }
 
-    public function tail(int $maxHeight = 10, string $sectionName = null): TailConsoleSectionOutput
+    public function tail(int $maxHeight = 10, ?string $sectionName = null): TailConsoleSectionOutput
     {
         return $this->section($sectionName)->tail($maxHeight);
     }
 
     private function getSection(string $name): ConsoleSectionOutput
     {
-        if (isset($this->sections[$name])) {
-            return $this->sections[$name];
+        $section = $this->sections[$name] ?? null;
+
+        if ($section instanceof ConsoleSectionOutput) {
+            return $section;
         }
 
-        return $this->sections[$name] = new ConsoleSectionOutput(
+        $output = $this->getOutput()->getOutput();
+        $stream = method_exists($output, 'getStream') ? $output->getStream() : null;
+
+        $section = new ConsoleSectionOutput(
             $name,
-            $this->getOutput()->getOutput()->getStream(),
+            is_resource($stream) ? $stream : null,
             $this->sections,
             $this->getOutput(),
             $this->getInput()
         );
+
+        $this->sections[$name] = $section;
+
+        return $section;
     }
 }

@@ -35,11 +35,13 @@ trait HandlesVerbosityOutput
     ): self {
         return tap(
             $this->getVerbosityConsoleOutput($verbosity),
-            function (self $verboseConsole) use ($message, $style, $verbosity) {
+            function (self $verboseConsole) use ($message, $style) {
                 if ($message) {
-                    $verboseConsole->line(
-                        $message,
-                        'henzeb.' . $style
+                    $verbosity = $verboseConsole->parseVerbosity();
+
+                    $verboseConsole->getOutput()->writeln(
+                        sprintf('<%1$s>%2$s</%1$s>', 'henzeb.' . $style, $message),
+                        $verbosity >= 0 && $verbosity <= 511 ? $verbosity : OutputInterface::VERBOSITY_NORMAL
                     );
                 }
             }
@@ -73,7 +75,7 @@ trait HandlesVerbosityOutput
         return $this->silence(!$unsilence);
     }
 
-    public function verbose(string $message = null): self
+    public function verbose(?string $message = null): self
     {
         return $this->verboseOutput(
             OutputInterface::VERBOSITY_VERBOSE,
@@ -82,7 +84,7 @@ trait HandlesVerbosityOutput
         );
     }
 
-    public function veryVerbose(string $message = null): self
+    public function veryVerbose(?string $message = null): self
     {
         return $this->verboseOutput(
             OutputInterface::VERBOSITY_VERY_VERBOSE,
@@ -91,7 +93,7 @@ trait HandlesVerbosityOutput
         );
     }
 
-    public function debug(string $message = null): self
+    public function debug(?string $message = null): self
     {
         return $this->verboseOutput(
             OutputInterface::VERBOSITY_DEBUG,
