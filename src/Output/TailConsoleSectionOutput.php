@@ -16,8 +16,7 @@ class TailConsoleSectionOutput extends ConsoleSectionOutput
         array           &$sections,
         OutputInterface $section,
         InputInterface  $input,
-    )
-    {
+    ) {
         parent::__construct(
             $name,
             $stream,
@@ -72,7 +71,8 @@ class TailConsoleSectionOutput extends ConsoleSectionOutput
 
         $this->replace(
             implode(
-                PHP_EOL, $content
+                PHP_EOL,
+                $content
             ) . ($newline ? PHP_EOL : '')
         );
     }

@@ -4,7 +4,6 @@ namespace Henzeb\Console\Concerns;
 
 use Closure;
 use Mockery;
-use stdClass;
 use RuntimeException;
 use Illuminate\Support\Facades\App;
 

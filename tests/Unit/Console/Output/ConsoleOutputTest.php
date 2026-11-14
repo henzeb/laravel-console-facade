@@ -2,7 +2,6 @@
 
 namespace Henzeb\Console\Tests\Unit\Console\Output;
 
-
 use Closure;
 use Henzeb\Console\Output\ConsoleOutput;
 use Henzeb\Console\Output\ConsoleSectionOutput;
@@ -16,6 +15,7 @@ use RuntimeException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\ConsoleOutput as SymfonyConsoleOutput;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
+
 use function resolve;
 
 class ConsoleOutputTest extends TestCase
@@ -107,8 +107,7 @@ class ConsoleOutputTest extends TestCase
         $expectedOutput = $output->getOutput();
 
         app()->bind(Factory::class, function ($app, $args) {
-            return new class($args['output']) extends Factory {
-
+            return new class ($args['output']) extends Factory {
             };
         });
         $resolved = resolve(Factory::class, ['output' => $expectedOutput]);
@@ -128,7 +127,7 @@ class ConsoleOutputTest extends TestCase
 
         $this->expectException(RuntimeException::class);
 
-        $output->watch(fn() => true, 0);
+        $output->watch(fn () => true, 0);
     }
 
     public function testWatchDoesNotRunWhenVerbosity()
@@ -150,7 +149,7 @@ class ConsoleOutputTest extends TestCase
 
         $this->expectException(RuntimeException::class);
 
-        $output->watch(fn() => true, -1);
+        $output->watch(fn () => true, -1);
     }
 
     public static function providesWatchRuns(): array
@@ -213,7 +212,7 @@ class ConsoleOutputTest extends TestCase
 
     public function testWithProgressbar()
     {
-        $actual = fn() => true;
+        $actual = fn () => true;
         $output = $this->mock(ConsoleOutput::class);
         $section = $this->mock(ConsoleSectionOutput::class);
         $section->expects('withProgressbar')->with(1, $actual)->andReturn(1);

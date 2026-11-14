@@ -18,4 +18,3 @@ function console(string $message = null): ConsoleOutput
 }
 
 ;
-

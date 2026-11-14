@@ -2,7 +2,6 @@
 
 namespace Henzeb\Console\Tests\Unit\Console\Output;
 
-
 use Closure;
 use Henzeb\Console\Facades\Console;
 use Henzeb\Console\Output\BufferedOutput;
@@ -61,7 +60,7 @@ class ConsoleSectionOutputTest extends TestCase
         })->bindTo($output, ConsoleSectionOutput::class)();
 
 
-        $output->makePartial()->withProgressBar(100, fn() => true);
+        $output->makePartial()->withProgressBar(100, fn () => true);
     }
 
     /**
@@ -112,7 +111,8 @@ class ConsoleSectionOutputTest extends TestCase
         $array = [];
         $console = new ConsoleSectionOutput(
             'name',
-            $stream, $array,
+            $stream,
+            $array,
             new ConsoleOutput(decorated: false),
             new ArrayInput([])
         );
@@ -128,7 +128,8 @@ class ConsoleSectionOutputTest extends TestCase
         $array = [];
         $console = new ConsoleSectionOutput(
             'test',
-            $stream, $array,
+            $stream,
+            $array,
             new ConsoleOutput(decorated: true),
             new ArrayInput([])
         );
@@ -230,8 +231,7 @@ class ConsoleSectionOutputTest extends TestCase
         $output = $output->section('test');
 
         app()->bind(Factory::class, function ($app, $args) {
-            return new class($args['output']) extends Factory {
-
+            return new class ($args['output']) extends Factory {
             };
         });
         $resolved = resolve(Factory::class, ['output' => $expectedOutput]);

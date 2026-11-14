@@ -8,14 +8,13 @@ use Orchestra\Testbench\TestCase;
 use PHPUnit\Framework\Assert;
 use RuntimeException;
 
-
 class InteractsWithInfiniteLoopTest extends TestCase
 {
     public function testShouldBlockWhenNotInUnitTest()
     {
         App::partialMock()->shouldReceive('runningUnitTests')->andReturn(false);
 
-        $infiniteLoops = new class {
+        $infiniteLoops = new class () {
             use InteractsWithInfiniteLoop {
                 infiniteLoop as public;
             }
@@ -47,7 +46,7 @@ class InteractsWithInfiniteLoopTest extends TestCase
      */
     public function testShouldLoopGivenTimes(int $loops)
     {
-        $infiniteLoops = new class {
+        $infiniteLoops = new class () {
             use InteractsWithInfiniteLoop {
                 infiniteLoop as public;
             }

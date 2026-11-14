@@ -22,7 +22,7 @@ class InteractsWithSignalsTest extends TestCase
     private function mockExit(ConsoleOutput $output, callable $callback = null): void
     {
         Closure::bind(function () use ($callback) {
-            $this->exitMethod = $callback ?? fn() => true;
+            $this->exitMethod = $callback ?? fn () => true;
         }, $output, ConsoleOutput::class)();
     }
 
@@ -52,7 +52,7 @@ class InteractsWithSignalsTest extends TestCase
     public function testOnSignalShouldCallTrap()
     {
         $output = $this->mock(ConsoleOutput::class)->makePartial();
-        $callable = fn() => false;
+        $callable = fn () => false;
         $output->shouldReceive('trap')
             ->once()
             ->withArgs([$callable, SIGTERM]);
@@ -73,7 +73,8 @@ class InteractsWithSignalsTest extends TestCase
         );
 
         $this->executeHandler(
-            $output, SIGINT,
+            $output,
+            SIGINT,
             [
                 "signo" => SIGINT,
                 "errno" => 0,

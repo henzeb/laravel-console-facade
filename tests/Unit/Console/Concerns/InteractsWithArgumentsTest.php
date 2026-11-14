@@ -2,7 +2,6 @@
 
 namespace Henzeb\Console\Tests\Unit\Console\Concerns;
 
-
 use Henzeb\Console\Output\ConsoleOutput;
 use Henzeb\Console\Providers\ConsoleServiceProvider;
 use Illuminate\Console\OutputStyle;

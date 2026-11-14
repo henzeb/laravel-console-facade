@@ -2,7 +2,6 @@
 
 namespace Henzeb\Console\Tests\Unit\Console\Output;
 
-
 use Henzeb\Console\Facades\Console;
 use Henzeb\Console\Output\BufferedOutput;
 use Henzeb\Console\Output\TailConsoleSectionOutput;

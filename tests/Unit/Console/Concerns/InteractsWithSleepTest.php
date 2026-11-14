@@ -11,7 +11,6 @@ use Orchestra\Testbench\TestCase;
 use PHPUnit\Framework\ExpectationFailedException;
 use RuntimeException;
 
-
 class InteractsWithSleepTest extends TestCase
 {
     protected function getPackageProviders($app): array

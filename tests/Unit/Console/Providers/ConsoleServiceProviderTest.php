@@ -65,8 +65,7 @@ class ConsoleServiceProviderTest extends TestCase
     public function testShouldHaveStyleRegistered(
         string $tag,
         string $expected
-    ): void
-    {
+    ): void {
         $output = new ConsoleOutput();
         $output->getOutput()->setDecorated(true);
         $formatter = $output->getOutput()->getFormatter();
@@ -104,8 +103,7 @@ class ConsoleServiceProviderTest extends TestCase
         bool   $runningUnitTests,
         string $expectedInput,
         string $expectedOutput
-    ): void
-    {
+    ): void {
         App::shouldReceive('runningInConsole')->andReturn($runningInConsole);
         App::shouldReceive('runningUnitTests')->andReturn($runningUnitTests);
 

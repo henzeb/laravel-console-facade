@@ -2,7 +2,6 @@
 
 namespace Henzeb\Console\Output;
 
-
 use Closure;
 use Henzeb\Console\Concerns\InteractsWithArguments;
 use Henzeb\Console\Concerns\InteractsWithExit;
@@ -22,16 +21,16 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class ConsoleOutput
 {
     use
-        Macroable,
-        Conditionable,
-        ValidatesInput,
-        InteractsWithIO,
-        InteractsWithExit,
-        InteractsWithSleep,
-        InteractsWithSignals,
-        InteractsWithOptions,
-        InteractsWithArguments,
-        InteractsWithInfiniteLoop;
+        Macroable;
+    use Conditionable;
+    use ValidatesInput;
+    use InteractsWithIO;
+    use InteractsWithExit;
+    use InteractsWithSleep;
+    use InteractsWithSignals;
+    use InteractsWithOptions;
+    use InteractsWithArguments;
+    use InteractsWithInfiniteLoop;
 
     private array $sections = [];
 
@@ -55,7 +54,7 @@ class ConsoleOutput
     public function getInput(): InputInterface
     {
         return Closure::bind(
-            fn() => $this->input,
+            fn () => $this->input,
             $this->output,
             SymfonyStyle::class
         )();
@@ -82,8 +81,7 @@ class ConsoleOutput
         callable $render,
         int      $refreshRate = 2,
         string   $sectionName = null
-    ): void
-    {
+    ): void {
         if ($refreshRate <= 0) {
             throw new RuntimeException('The refresh rate for watch cannot be lower than 1');
         }

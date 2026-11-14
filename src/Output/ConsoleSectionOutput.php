@@ -17,15 +17,15 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
     use Conditionable,
         Macroable,
         InteractsWithIO {
-        anticipate as private;
-        ask as private;
-        askWithCompletion as private;
-        choice as private;
-        confirm as private;
-        question as private;
-        secret as private;
-        InteractsWithIO::withProgressBar as private parentWithProgressbar;
-    }
+            anticipate as private;
+            ask as private;
+            askWithCompletion as private;
+            choice as private;
+            confirm as private;
+            question as private;
+            secret as private;
+            InteractsWithIO::withProgressBar as private parentWithProgressbar;
+        }
 
     protected array $sections = [];
     private ?TailConsoleSectionOutput $tail = null;
@@ -36,8 +36,7 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
         array           &$sections,
         OutputInterface $output,
         InputInterface  $input,
-    )
-    {
+    ) {
         $this->input = $input;
 
 
@@ -74,7 +73,8 @@ class ConsoleSectionOutput extends SymfonyConsoleSectionOutput
 
     public function withProgressBar($totalSteps, Closure $callback)
     {
-        return tap($this->parentWithProgressbar($totalSteps, $callback),
+        return tap(
+            $this->parentWithProgressbar($totalSteps, $callback),
             function () {
                 if (!$this->contentEndsWithNewLine()) {
                     (function () {

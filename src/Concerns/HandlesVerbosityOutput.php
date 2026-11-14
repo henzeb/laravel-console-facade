@@ -5,7 +5,6 @@ namespace Henzeb\Console\Concerns;
 use Henzeb\Console\Output\NullOutput;
 use Illuminate\Console\OutputStyle;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
-
 use Symfony\Component\Console\Output\OutputInterface;
 
 trait HandlesVerbosityOutput
@@ -33,8 +32,7 @@ trait HandlesVerbosityOutput
         int     $verbosity,
         string  $style,
         ?string $message
-    ): self
-    {
+    ): self {
         return tap(
             $this->getVerbosityConsoleOutput($verbosity),
             function (self $verboseConsole) use ($message, $style, $verbosity) {

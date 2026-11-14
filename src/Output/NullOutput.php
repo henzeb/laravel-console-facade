@@ -6,7 +6,6 @@ use Symfony\Component\Console\Output\NullOutput as SymfonyNullOutput;
 
 class NullOutput extends SymfonyNullOutput
 {
-
     /**
      * @var false|resource
      */

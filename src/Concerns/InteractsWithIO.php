@@ -9,8 +9,8 @@ use RuntimeException;
 
 trait InteractsWithIO
 {
-    use IlluminateInteractsWithIO,
-        HandlesVerbosityOutput;
+    use IlluminateInteractsWithIO;
+    use HandlesVerbosityOutput;
 
     public function components(): Factory
     {

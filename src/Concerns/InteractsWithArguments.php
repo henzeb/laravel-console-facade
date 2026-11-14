@@ -10,7 +10,7 @@ trait InteractsWithArguments
     public function mergeArguments(array $arguments): void
     {
         Closure::bind(
-            function() use ($arguments){
+            function () use ($arguments) {
 
                 $this->arguments = array_merge(
                     $this->arguments,
@@ -22,9 +22,10 @@ trait InteractsWithArguments
         )();
     }
 
-    public function argumentGiven(string $argument): bool {
+    public function argumentGiven(string $argument): bool
+    {
         return Closure::bind(
-            function($argument){
+            function ($argument) {
                 return array_key_exists($argument, $this->arguments);
             },
             $this->getInput(),

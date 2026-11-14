@@ -31,7 +31,7 @@ class NullOutputTest extends TestCase
 
     public function testIsWindows()
     {
-        $output = new class extends NullOutput {
+        $output = new class () extends NullOutput {
             public function isWindows(): bool
             {
                 return parent::isWindows();
@@ -46,7 +46,7 @@ class NullOutputTest extends TestCase
         set_error_handler(function () {
             throw new Exception();
         });
-        $output = new class extends NullOutput {
+        $output = new class () extends NullOutput {
             public function isWindows(): bool
             {
                 return true;

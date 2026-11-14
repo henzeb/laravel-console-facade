@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\App;
 use Orchestra\Testbench\TestCase;
 use RuntimeException;
 
-
 class InteractsWithExitTest extends TestCase
 {
     protected function getPackageProviders($app): array

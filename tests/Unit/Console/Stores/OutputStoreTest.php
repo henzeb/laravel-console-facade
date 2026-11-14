@@ -12,7 +12,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class OutputStoreTest extends TestCase
 {
-
     protected function setUp(): void
     {
         Closure::bind(function () {

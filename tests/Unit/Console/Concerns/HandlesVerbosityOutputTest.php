@@ -2,7 +2,6 @@
 
 namespace Henzeb\Console\Tests\Unit\Console\Concerns;
 
-
 use Henzeb\Console\Output\ConsoleOutput;
 use Henzeb\Console\Providers\ConsoleServiceProvider;
 use Henzeb\Console\Tests\Unit\Console\Concerns\Stub\StubCommandServiceProvider;
@@ -124,8 +123,7 @@ class HandlesVerbosityOutputTest extends TestCase
         int    $verbosity,
         string $command,
         string $expectedOutput
-    )
-    {
+    ) {
         $bufferedOutput = new BufferedOutput();
         $output = new ConsoleOutput();
 

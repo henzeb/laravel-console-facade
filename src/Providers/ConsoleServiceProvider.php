@@ -21,7 +21,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutput as SymfonyConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
-
 class ConsoleServiceProvider extends ServiceProvider
 {
     public function boot(): void
@@ -85,18 +84,19 @@ class ConsoleServiceProvider extends ServiceProvider
                 $command->ignoreValidationErrors();
 
                 $command->setCode(
-                    Closure::bind(function (InputInterface $input, OutputInterface $output) {
-                        $this->ignoreValidationErrors();
-                        Console::setCommandForValidation($this::class);
-                        Console::validate();
+                    Closure::bind(
+                        function (InputInterface $input, OutputInterface $output) {
+                            $this->ignoreValidationErrors();
+                            Console::setCommandForValidation($this::class);
+                            Console::validate();
 
-                        /**
-                         * rebinding definition causes revalidation of original validation.
-                         */
-                        $input->bind($this->getDefinition());
+                            /**
+                             * rebinding definition causes revalidation of original validation.
+                             */
+                            $input->bind($this->getDefinition());
 
-                        return $this->execute($input, $output);
-                    },
+                            return $this->execute($input, $output);
+                        },
                         $command,
                         Command::class
                     )

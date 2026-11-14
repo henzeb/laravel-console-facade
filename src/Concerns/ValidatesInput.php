@@ -60,14 +60,13 @@ trait ValidatesInput
         return array_merge(
             collect($this->arguments())
                 ->filter(
-                    fn($a, $b) => $this->argumentGiven($b)
+                    fn ($a, $b) => $this->argumentGiven($b)
                 )
                 ->toArray(),
-
             collect($this->options())
-                ->filter(fn($value, $name) => $this->optionGiven($name))
+                ->filter(fn ($value, $name) => $this->optionGiven($name))
                 ->mapWithKeys(
-                    fn($value, $name) => ['--' . ltrim($name, '-') => $value]
+                    fn ($value, $name) => ['--' . ltrim($name, '-') => $value]
                 )->toArray()
         );
     }
@@ -134,7 +133,7 @@ trait ValidatesInput
                         return $name . PHP_EOL . collect($value)
                                 ->flatten()
                                 ->map(
-                                    fn(string $value) => "  " . $value
+                                    fn (string $value) => "  " . $value
                                 )->implode(PHP_EOL);
                     }
                 )->implode(PHP_EOL);
@@ -162,6 +161,6 @@ trait ValidatesInput
      */
     public function executeBeforeValidation(string $command, ValidatorInstance $validator): void
     {
-        ($this->beforeValidation[$command] ?? fn() => null)($validator);
+        ($this->beforeValidation[$command] ?? fn () => null)($validator);
     }
 }

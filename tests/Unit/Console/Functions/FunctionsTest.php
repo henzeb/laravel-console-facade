@@ -7,6 +7,7 @@ use Henzeb\Console\Providers\ConsoleServiceProvider;
 use Illuminate\Console\OutputStyle;
 use Orchestra\Testbench\TestCase;
 use Symfony\Component\Console\Output\BufferedOutput;
+
 use function Henzeb\Console\Functions\console;
 
 class FunctionsTest extends TestCase
